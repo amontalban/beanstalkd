@@ -1,0 +1,27 @@
+This work was packaged for Debian by:
+
+    Serafeim Zanikolas <serzan@hellug.gr> on Wed, 18 Nov 2009 23:32:00 +0100
+
+It was downloaded from <http://kr.github.com/beanstalkd/download.html>
+
+Upstream Author(s):
+
+    <put author's name and email here>
+    <likewise for another author>
+
+Copyright:
+
+    <Copyright (C) YYYY Name OfAuthor>
+    <likewise for another author>
+
+License:
+
+    <Put the license of the package here indented by 4 spaces>
+
+The Debian packaging is:
+
+    Copyright © 2009 Serafeim Zanikolas <serzan@hellug.gr>
+
+and is licensed under the GPL version 3,
+see `/usr/share/common-licenses/GPL-3'.
+

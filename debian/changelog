@@ -1,0 +1,5 @@
+beanstalkd (1.4.2-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Serafeim Zanikolas <serzan@hellug.gr>  Wed, 18 Nov 2009 23:32:00 +0100
