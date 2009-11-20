@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+# XXX: should we stop when called with $1=upgrade?
+
+if [ -x "/etc/init.d/beanstalkd" ]; then
+	if [ -x "`which invoke-rc.d 2>/dev/null`" ]; then
+		invoke-rc.d beanstalkd stop || exit $?
+	else
+		/etc/init.d/beanstalkd stop || exit $?
+	fi
+fi

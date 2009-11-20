@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+PACKAGE=beanstalkd
+
+if [ -x "/etc/init.d/beanstalkd" ]; then
+	update-rc.d beanstalkd start 90 2 3 4 5 . stop 90 1 . >/dev/null
+	if [ -x "`which invoke-rc.d 2>/dev/null`" ]; then
+		invoke-rc.d beanstalkd start || exit $?
+	else
+		/etc/init.d/beanstalkd start || exit $?
+	fi
+fi
+
+exit 0
