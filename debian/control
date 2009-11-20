@@ -2,13 +2,13 @@ Source: beanstalkd
 Section: net
 Priority: extra
 Maintainer: Serafeim Zanikolas <serzan@hellug.gr>
-Build-Depends: debhelper (>= 7), autotools-dev
+Build-Depends: debhelper (>= 7), autotools-dev, libtool, libevent-dev (>= 1.4.1), netcat
+#, libfiu-dev
 Standards-Version: 3.8.3
 Homepage: http://xph.us/software/beanstalkd/
 
 Package: beanstalkd
 Architecture: any
-Build-Depends: libtool, libevent-dev (>= 1.4.1), netcat
 Depends: ${shlibs:Depends}, ${misc:Depends}, libevent (>= 1.4.1)
 Description: simple, in-memory workqueue server
  Beanstalk is a simple, fast workqueue server. Its interface is generic, but
