@@ -1,0 +1,2 @@
+# set any custom options here, to be used by /etc/init.d/beanstalkd
+DAEMON_OPTS=""
