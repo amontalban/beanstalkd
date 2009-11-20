@@ -15,4 +15,4 @@ Description: simple, in-memory workqueue server
  was originally designed for reducing the latency of page views in high-volume
  web applications by running time-consuming tasks asynchronously.
  .
- This package has only the server.
+ This package has the server files.
