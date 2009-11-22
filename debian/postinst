@@ -36,16 +36,4 @@ cat >$DEFAULTSFILE <<EOF
 DAEMON_OPTS="-d -f beanstalkd"
 EOF
 
-# Automatically added by dh_installinit
-if [ -x "/etc/init.d/beanstalkd" ]; then
-	update-rc.d beanstalkd start 20 2 3 4 5 . stop 20 1 . >/dev/null
-	if [ -x "`which invoke-rc.d 2>/dev/null`" ]; then
-		invoke-rc.d beanstalkd start || exit $?
-	else
-		/etc/init.d/beanstalkd start || exit $?
-	fi
-fi
-# End automatically added section
-
-
 exit 0
