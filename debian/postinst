@@ -8,10 +8,8 @@ DEFAULTSFILE=/etc/default/$PACKAGE
 
 #DEBHELPER#
 
-. /usr/share/debconf/confmodule
-
 case "$1" in
-     configure)
+    configure)
 
         # Create beanstalkd system user
         getent passwd beanstalkd > /dev/null || \
@@ -28,6 +26,15 @@ case "$1" in
         exit 1;
         ;;
 esac
+
+# create default file if it doesn't exist already
+test -e $DEFAULTSFILE || \
+cat >$DEFAULTSFILE <<EOF
+## Defaults for the beanstalkd init script, /etc/init.d/beanstalkd on
+## Debian systems. Append ``-b /var/lib/beanstalkd'' for persistent
+## storage. See beanstalkd(1) for details.
+DAEMON_OPTS="-d -f beanstalkd"
+EOF
 
 # Automatically added by dh_installinit
 if [ -x "/etc/init.d/beanstalkd" ]; then
