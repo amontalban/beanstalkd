@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-# XXX: should we stop when called with $1=upgrade?
+#DEBHELPER#
 
 if [ -x "/etc/init.d/beanstalkd" ]; then
 	if [ -x "`which invoke-rc.d 2>/dev/null`" ]; then
