@@ -1,2 +1,4 @@
-# set any custom options here, to be used by /etc/init.d/beanstalkd
-DAEMON_OPTS=""
+## Defaults for the beanstalkd init script, sourced by /etc/init.d/beanstalkd
+## on Debian systems. Append ``-b /var/lib/beanstalkd'' for persistence
+## storage. See beanstalkd(1) for details
+DAEMON_OPTS="-d -f beanstalkd"
