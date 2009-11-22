@@ -34,3 +34,14 @@
    if test "$BEAN_RPATH" != "no"; then
      LDFLAGS="$LDFLAGS $ld_runpath_switch$LIBEVENT_DIR/$LIBDIR"
    fi
+--- a/config.status
++++ b/config.status
+@@ -667,7 +667,7 @@
+ S["target_alias"]=""
+ S["host_alias"]=""
+ S["build_alias"]="i486-linux-gnu"
+-S["LIBS"]="-levent -levent  -levent -lnsl"
++S["LIBS"]="-levent -levent  -levent"
+ S["ECHO_T"]=""
+ S["ECHO_N"]="-n"
+ S["ECHO_C"]=""
