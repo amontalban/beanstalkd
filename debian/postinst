@@ -2,15 +2,43 @@
 
 set -e
 
-PACKAGE=beanstalkd
 
+PACKAGE=beanstalkd
+DEFAULTSFILE=/etc/default/$PACKAGE
+
+#DEBHELPER#
+
+. /usr/share/debconf/confmodule
+
+case "$1" in
+     configure)
+
+        # Create beanstalkd system user
+        getent passwd beanstalkd > /dev/null || \
+            adduser --quiet --system --home /var/lib/beanstalkd  --no-create-home \
+            --gecos 'Beanstalk Server' --group beanstalkd
+
+        ;;
+
+    failed-upgrade|abort-upgrade|abort-remove|abort-deconfigure|in-favour|removing)
+        ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2;
+        exit 1;
+        ;;
+esac
+
+# Automatically added by dh_installinit
 if [ -x "/etc/init.d/beanstalkd" ]; then
-	update-rc.d beanstalkd start 90 2 3 4 5 . stop 90 1 . >/dev/null
+	update-rc.d beanstalkd start 20 2 3 4 5 . stop 20 1 . >/dev/null
 	if [ -x "`which invoke-rc.d 2>/dev/null`" ]; then
 		invoke-rc.d beanstalkd start || exit $?
 	else
 		/etc/init.d/beanstalkd start || exit $?
 	fi
 fi
+# End automatically added section
+
 
 exit 0
