@@ -39,6 +39,7 @@ case "$1" in
             rmdir /var/lib/beanstalkd
         else
             echo "/var/lib/beanstalkd is not empty; not deleting"
+        fi
         exit 0
     ;;
     purge)
