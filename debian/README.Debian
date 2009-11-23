@@ -1,3 +1,0 @@
-beanstalkd _will_ be restarted upon package upgrades and, by default, does not
-use persistent storage. If that's unacceptable, enable the -b switch in
-/etc/defaults/beanstalkd.

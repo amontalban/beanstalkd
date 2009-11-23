@@ -2,7 +2,8 @@ Source: beanstalkd
 Section: net
 Priority: extra
 Maintainer: Serafeim Zanikolas <serzan@hellug.gr>
-Build-Depends: debhelper (>= 7), quilt, autotools-dev, libtool, libevent-dev (>= 1.4.1), netcat, fiu-utils
+Build-Depends: debhelper (>= 7.0.50~), quilt, autotools-dev, libtool,
+               libevent-dev (>= 1.4.1), netcat, fiu-utils
 Standards-Version: 3.8.3
 Homepage: http://xph.us/software/beanstalkd/
 
