@@ -1,1 +1,2 @@
+install-in-sbin.diff
 dont-link-against-libnsl.diff
