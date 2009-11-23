@@ -29,10 +29,12 @@ case "$1" in
     ;;
 
     remove)
-        if [ $(find /var/lib/beanstalkd -type f | wc -l) -eq 0 ]; then
-            rmdir /var/lib/beanstalkd
-        else
-            echo "/var/lib/beanstalkd is not empty; not deleting"
+        if [ -d /var/lib/beanstalkd ]; then
+            if [ $(find /var/lib/beanstalkd -type f | wc -l) -eq 0 ]; then
+                rmdir /var/lib/beanstalkd
+            else
+                echo "/var/lib/beanstalkd is not empty; not deleting"
+            fi
         fi
         exit 0
     ;;
