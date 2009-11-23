@@ -10,7 +10,7 @@ PACKAGE=beanstalkd
 DEFAULTSFILE=/etc/default/$PACKAGE
 
 
-cleanupUcf() 
+cleanupUcf()
 {
     which ucf >/dev/null && HAS_UCF=yes || HAS_UCF=no
     which ucfr >/dev/null && HAS_UCFR=yes || HAS_UCFR=no
@@ -19,8 +19,8 @@ cleanupUcf()
     for ext in '~' '%' .bak .ucf-new .ucf-old .ucf-dist .dpkg-tmp '';  do
         rm -f "${DEFAULTSFILE}${ext}"
     done
-    [ "$HAS_UCF"  != "yes"  ] || ucf  --purge "$DEFAULTSFILE"
-    [ "$HAS_UCFR" != "yes" ]  || ucfr --purge "$PACKAGE" "$DEFAULTSFILE"
+    [ "$HAS_UCF"  != "yes" ] || ucf  --purge "$DEFAULTSFILE"
+    [ "$HAS_UCFR" != "yes" ] || ucfr --purge "$PACKAGE" "$DEFAULTSFILE"
 }
 
 case "$1" in
@@ -41,7 +41,6 @@ case "$1" in
     purge)
 
         rm -rf /var/lib/beanstalkd/
-        [ ! -d /etc/beanstalkd ] || rmdir  --ignore-fail-on-non-empty /etc/beanstalkd || true
         cleanupUcf
 
         # remove user, group and home directory beanstalkd
