@@ -1,0 +1,15 @@
+# Description: install the beanstalkd binary in /usr/sbin instead of /usr/bin
+# Author: Serafeim Zanikolas <serzan@hellug.gr>
+# Last-Update: 2009-11-22
+--- a/configure
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -638,7 +638,7 @@
+ check: check-am
+ all-am: Makefile $(PROGRAMS) $(MANS) $(DATA) config.h
+ installdirs:
+-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(docdir)"; do \
++	for dir in "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(docdir)"; do \
+ 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
+ 	done
+ install: install-am
