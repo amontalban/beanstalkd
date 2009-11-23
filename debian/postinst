@@ -6,8 +6,6 @@ set -e
 PACKAGE=beanstalkd
 DEFAULTSFILE=/etc/default/$PACKAGE
 
-#DEBHELPER#
-
 case "$1" in
     configure)
 
@@ -35,5 +33,7 @@ cat >$DEFAULTSFILE <<EOF
 ## storage. See beanstalkd(1) for details.
 DAEMON_OPTS="-d -f beanstalkd"
 EOF
+
+#DEBHELPER#
 
 exit 0
