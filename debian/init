@@ -114,6 +114,11 @@ running() {
 
 start_server() {
 # Start the process using the wrapper
+        if [ "x$START" != "xyes" -a "x$START" != "xtrue"  ]; then
+            echo ""
+            echo "beanstalkd not configured to start, please edit /etc/default/beanstalkd to enable"
+            exit 0
+        fi
         if [ -z "$DAEMONUSER" ] ; then
             start_daemon -p $PIDFILE $DAEMON $DAEMON_OPTS
             errcode=$?
