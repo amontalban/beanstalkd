@@ -26,7 +26,7 @@
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: in-memory workqueue manager
-# Description:       beanstalk is a simple, fast workqueue server. Its
+# Description:       beanstalk is a simple, fast workqueue manager. Its
 #                    interface is generic, but was originally designed
 #                    for reducing the latency of page views in high-volume
 #                    web applications by running time-consuming tasks
@@ -50,12 +50,12 @@ test -x $DAEMON || exit 0
 # at /etc/default/$NAME
 DAEMON_OPTS=""          # Additional options given to the server
 
-DIETIME=10              # Time to wait for the server to die, in seconds
+#DIETIME=10              # Time to wait for the server to die, in seconds
                         # If this value is set too low you might not
                         # let some servers to die gracefully and
                         # 'restart' will not work
 
-#STARTTIME=2             # Time to wait for the server to start, in seconds
+STARTTIME=1             # Time to wait for the server to start, in seconds
                         # If this value is set each time the server is
                         # started (on start or restart) the script will
                         # stall to try to determine if it is running
@@ -139,6 +139,7 @@ stop_server() {
                         --exec $DAEMON
             errcode=$?
         fi
+        rm -f $PIDFILE
 
         return $errcode
 }
