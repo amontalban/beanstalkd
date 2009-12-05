@@ -11,12 +11,12 @@ export ac_cv_lib_nsl_inet_aton=thanks_but_no
 
 # install binary in /usr/sbin instead of /usr/bin
 override_dh_auto_configure:
-	dh_auto_configure -- --bindir=/usr/sbin --disable-rpath
+	dh_auto_configure -- --disable-rpath
 
 override_dh_prep:
 	dh_prep -X beanstalkd.spec
 
-# silly acrobatics to preserve a file that shouldn't be there in the first place
+# silly acrobatics to preserve an upstream file
 override_dh_auto_clean:
 	dh_testdir
 	mv beanstalkd.spec beanstalkd.spec_
