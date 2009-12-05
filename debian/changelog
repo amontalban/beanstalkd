@@ -1,4 +1,4 @@
-beanstalkd (1.4.2-1) unstable; urgency=low
+beanstalkd (1.4.3-1) unstable; urgency=low
 
   * Initial release (Closes: #557128)
 

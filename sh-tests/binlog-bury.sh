@@ -50,33 +50,14 @@ fi
 $nc $server $port <<EOF > "$out1"
 put 0 0 100 0
 
+reserve
+bury 1 0
 quit
 EOF
 
 diff - "$out1" <<EOF
 INSERTED 1
+RESERVED 1 0
+
+BURIED
 EOF
-res=$?
-test "$res" -eq 0 || exit $res
-
-killbeanstalkd
-
-sleep .1
-./beanstalkd -p $port -b "$logdir" >/dev/null 2>/dev/null &
-bpid=$!
-
-sleep .1
-if ! ps -p $bpid >/dev/null; then
-  echo "Could not start beanstalkd for testing (possibly port $port is taken)"
-  exit 2
-fi
-
-$nc $server $port <<EOF > "$out2"
-delete 1
-quit
-EOF
-
-diff - "$out2" <<EOF
-DELETED
-EOF
-
