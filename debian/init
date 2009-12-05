@@ -35,7 +35,7 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-DAEMON=/usr/sbin/beanstalkd # Introduce the server's location here
+DAEMON=/usr/bin/beanstalkd # Introduce the server's location here
 NAME=beanstalkd             # Introduce the short server's name here
 DESC="in-memory queueing server" # Introduce a short description here
 #LOGDIR=/var/log/beanstalkd  # Log directory to use
