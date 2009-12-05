@@ -10,7 +10,7 @@ out1="${tmpdir}/bnch$$.1"
 out2="${tmpdir}/bnch$$.2"
 logdir="${tmpdir}/bnch$$.d"
 nc='nc -q 1'
-nc -q 1 2>&1 | grep -q option && nc='nc -w 1' # workaround for older netcat
+nc -q 1 2>&1 | grep -q "illegal option" && nc='nc -w 1' # workaround for older netcat
 
 if test "`type -t fiu-run`" = ''
 then
@@ -72,6 +72,7 @@ put 0 0 100 50
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 put 0 0 100 50
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+quit
 EOF
 
 diff - "$out1" <<EOF
@@ -98,6 +99,7 @@ put 0 0 100 50
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 put 0 0 100 50
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+quit
 EOF
 
 diff - "$out1" <<EOF
@@ -130,6 +132,7 @@ delete 7
 delete 8
 delete 9
 delete 10
+quit
 EOF
 
 diff - "$out2" <<EOF

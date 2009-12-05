@@ -259,8 +259,18 @@ binlog_read_log_file(binlog b, job binlog_jobs)
 static void
 binlog_close(binlog b)
 {
+    int r;
+
     if (!b) return;
     if (b->fd < 0) return;
+    if (b->free) {
+        // Some compilers give a warning if the return value of ftruncate is
+        // ignored. So we pretend to use it.
+        r = ftruncate(b->fd, binlog_size_limit - b->free);
+        if (r == -1) {
+            // Nothing we can do. The user might see warnings next startup.
+        }
+    }
     close(b->fd);
     b->fd = -1;
     binlog_dref(b);
@@ -442,7 +452,8 @@ binlog_write_job(job j)
     vec[2].iov_base = (char *) j;
     to_write += vec[2].iov_len = job_record_size;
 
-    if (j->state == JOB_STATE_READY || j->state == JOB_STATE_DELAYED) {
+    if (j->state == JOB_STATE_READY || j->state == JOB_STATE_DELAYED ||
+        j->state == JOB_STATE_BURIED) {
         if (!j->binlog) {
             tube_namelen = strlen(j->tube->name);
             to_write += vec[1].iov_len = tube_namelen;

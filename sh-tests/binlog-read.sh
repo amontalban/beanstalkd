@@ -8,7 +8,7 @@ out1="${tmpdir}/bnch$$.1"
 out2="${tmpdir}/bnch$$.2"
 logdir="${tmpdir}/bnch$$.d"
 nc='nc -q 1'
-nc -q 1 2>&1 | grep -q option && nc='nc -w 1' # workaround for older netcat
+nc -q 1 2>&1 | grep -q "illegal option" && nc='nc -w 1' # workaround for older netcat
 
 killbeanstalkd() {
     {
@@ -93,6 +93,7 @@ watch test
 reserve
 delete 1
 delete 2
+quit
 EOF
 
 diff - "$out2" <<EOF
