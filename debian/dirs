@@ -1,1 +1,3 @@
-/var/lib/beanstalkd/
+usr/bin
+var/lib/beanstalkd
+etc/default
