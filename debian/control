@@ -12,9 +12,9 @@ Homepage: http://xph.us/software/beanstalkd/
 Package: beanstalkd
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, adduser, netbase
-Description: simple, in-memory workqueue server
- Beanstalk is a simple, fast workqueue server. Its interface is generic, but
- was originally designed for reducing the latency of page views in high-volume
- web applications by running time-consuming tasks asynchronously.
+Description: simple, in-memory message queueing server
+ Beanstalk is a simple, fast, message queueing server. Its interface is
+ generic, but was originally designed for reducing the latency of page views in
+ high-volume web applications by running time-consuming tasks asynchronously.
  .
  This package has the server files.
