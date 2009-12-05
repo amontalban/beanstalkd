@@ -9,7 +9,6 @@ export ac_cv_lib_nsl_inet_aton=thanks_but_no
 %:
 	dh $@
 
-# install binary in /usr/sbin instead of /usr/bin
 override_dh_auto_configure:
 	dh_auto_configure -- --disable-rpath
 
