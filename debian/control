@@ -3,9 +3,7 @@ Section: net
 Priority: extra
 Maintainer: Serafeim Zanikolas <serzan@hellug.gr>
 Build-Depends: debhelper (>= 7.0.50~), autotools-dev, libtool,
-               libevent-dev (>= 1.4.1)
-# add these build-deps if we ever enable build-time testing:
-# netcat, fiu-utils, procps
+               libevent-dev (>= 1.4.1), netcat, fiu-utils, procps, bash
 Standards-Version: 3.8.3
 Homepage: http://xph.us/software/beanstalkd/
 

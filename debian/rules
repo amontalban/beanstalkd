@@ -23,9 +23,9 @@ override_dh_auto_clean:
 	mv beanstalkd.spec_ beanstalkd.spec
 
 # don't run upstream tests (to avoid opening a port in buildd machines)
-override_dh_auto_test:
-	mv check.sh check.sh_
-	ln -s /bin/true ./check.sh
-	dh_auto_test
-	rm check.sh
-	mv check.sh_ check.sh
+#override_dh_auto_test:
+#	mv check.sh check.sh_
+#	ln -s /bin/true ./check.sh
+#	dh_auto_test
+#	rm check.sh
+#	mv check.sh_ check.sh

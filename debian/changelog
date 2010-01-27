@@ -1,3 +1,12 @@
+beanstalkd (1.4.3-2) unstable; urgency=low
+
+  * Enable build-time tests:
+    - patch scripts to try using different ports when the default is not
+      available
+    - add test-specific Build-Depends
+
+ -- Serafeim Zanikolas <serzan@hellug.gr>  Tue, 26 Jan 2010 23:36:57 +0100
+
 beanstalkd (1.4.3-1) unstable; urgency=low
 
   * Initial release (Closes: #557128)
