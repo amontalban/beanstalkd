@@ -3,17 +3,18 @@ Section: net
 Priority: extra
 Maintainer: Serafeim Zanikolas <serzan@hellug.gr>
 Build-Depends: debhelper (>= 7.0.50~), autotools-dev, libtool,
-               libevent-dev (>= 1.4.1), netcat, fiu-utils, procps, bash
-Standards-Version: 3.8.3
+               libevent-dev (>= 1.4.1), netcat, fiu-utils, procps
+Standards-Version: 3.8.4
 Homepage: http://xph.us/software/beanstalkd/
 
 Package: beanstalkd
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, adduser, netbase
-Description: simple, in-memory, message queueing server
- Beanstalkd is a simple, fast, message queueing server, in which messages are
- organised in "tubes". Beanstalk clients can insert and consume messages into
- and from such tubes.
+Suggests: doc-base
+Description: simple, in-memory, workqueue service
+ Beanstalkd is a simple, fast, workqueue service (a specific case of message
+ queueing), in which messages are organised in "tubes". Beanstalk clients can
+ insert and consume messages into and from such tubes.
  .
  The beanstalk interface is generic, but was originally designed for reducing
  the latency of page views in high-volume web applications by running
