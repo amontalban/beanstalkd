@@ -2,8 +2,8 @@ Author: Serafeim Zanikolas <serzan@hellug.gr>
 Forwarded: http://groups.google.com/group/beanstalk-talk/browse_thread/thread/badb729887f4f4d
 Last-Update: 2010-02-21
 
---- beanstalkd-1.4.3.orig/check.sh
-+++ beanstalkd-1.4.3/check.sh
+--- a/check.sh
++++ b/check.sh
 @@ -1,5 +1,12 @@
  #!/bin/bash
  
@@ -17,8 +17,8 @@ Last-Update: 2010-02-21
  one="$(dirname "$0")/check-one.sh"
  
  for commands in "$@"; do
---- beanstalkd-1.4.3.orig/check-one.sh
-+++ beanstalkd-1.4.3/check-one.sh
+--- a/check-one.sh
++++ b/check-one.sh
 @@ -1,7 +1,8 @@
 -#!/bin/sh
 +#!/bin/bash
@@ -30,7 +30,7 @@ Last-Update: 2010-02-21
  tmpdir="$TMPDIR"
  test -z "$tmpdir" && tmpdir=/tmp
  tmpf="${tmpdir}/bnch$$"
-@@ -34,14 +35,7 @@ if [ ! -x ./beanstalkd ]; then
+@@ -34,14 +35,7 @@
    exit 2
  fi
  
@@ -46,8 +46,8 @@ Last-Update: 2010-02-21
  
  # Run the test
  fgrep -v "#" $commands | $nc $server $port > "$tmpf"
---- beanstalkd-1.4.3.orig/sh-tests/binlog-diskfull-delete.sh
-+++ beanstalkd-1.4.3/sh-tests/binlog-diskfull-delete.sh
+--- a/sh-tests/binlog-diskfull-delete.sh
++++ b/sh-tests/binlog-diskfull-delete.sh
 @@ -1,8 +1,9 @@
  #!/usr/bin/env bash
  
@@ -59,7 +59,7 @@ Last-Update: 2010-02-21
  tmpdir="$TMPDIR"
  size=1000
  test -z "$tmpdir" && tmpdir=/tmp
-@@ -25,17 +26,9 @@ fail() {
+@@ -25,17 +26,9 @@
      exit 1
  }
  
@@ -78,7 +78,7 @@ Last-Update: 2010-02-21
  }
  
  catch() {
-@@ -56,16 +49,7 @@ if [ ! -x ./beanstalkd ]; then
+@@ -56,16 +49,7 @@
    exit 2
  fi
  
@@ -96,7 +96,7 @@ Last-Update: 2010-02-21
  
  # Insert enough jobs to create another binlog file
  $nc $server $port <<EOF > "$out1"
-@@ -181,15 +165,7 @@ test "$res" -eq 0 || exit $res
+@@ -181,15 +165,7 @@
  
  killbeanstalkd
  
@@ -113,8 +113,8 @@ Last-Update: 2010-02-21
  
  $nc $server $port <<EOF > "$out2"
  delete 8
---- beanstalkd-1.4.3.orig/sh-tests/binlog-diskfull.sh
-+++ beanstalkd-1.4.3/sh-tests/binlog-diskfull.sh
+--- a/sh-tests/binlog-diskfull.sh
++++ b/sh-tests/binlog-diskfull.sh
 @@ -1,8 +1,9 @@
  #!/usr/bin/env bash
  
@@ -126,7 +126,7 @@ Last-Update: 2010-02-21
  tmpdir="$TMPDIR"
  size=1000
  test -z "$tmpdir" && tmpdir=/tmp
-@@ -18,17 +19,9 @@ then
+@@ -18,17 +19,9 @@
    exit 0
  fi
  
@@ -145,7 +145,7 @@ Last-Update: 2010-02-21
  }
  
  catch() {
-@@ -44,16 +37,7 @@ if [ ! -x ./beanstalkd ]; then
+@@ -44,16 +37,7 @@
    exit 2
  fi
  
@@ -163,7 +163,7 @@ Last-Update: 2010-02-21
  
  # Make beanstalkd think the disk is full now.
  fiu-ctrl -e posix/io/oc/open -i $ENOSPC $bpid
-@@ -114,14 +98,7 @@ test "$res" -eq 0 || exit $res
+@@ -114,14 +98,7 @@
  killbeanstalkd
  
  sleep .1
@@ -179,8 +179,8 @@ Last-Update: 2010-02-21
  
  $nc $server $port <<EOF > "$out2"
  delete 1
---- beanstalkd-1.4.3.orig/sh-tests/binlog-basic.sh
-+++ beanstalkd-1.4.3/sh-tests/binlog-basic.sh
+--- a/sh-tests/binlog-basic.sh
++++ b/sh-tests/binlog-basic.sh
 @@ -1,7 +1,8 @@
  #!/usr/bin/env bash
  
@@ -191,7 +191,7 @@ Last-Update: 2010-02-21
  tmpdir="$TMPDIR"
  test -z "$tmpdir" && tmpdir=/tmp
  out1="${tmpdir}/bnch$$.1"
-@@ -10,14 +11,6 @@ logdir="${tmpdir}/bnch$$.d"
+@@ -10,14 +11,6 @@
  nc='nc -q 1'
  nc -q 1 2>&1 | grep -q "illegal option" && nc='nc -w 1' # workaround for older netcat
  
@@ -206,7 +206,7 @@ Last-Update: 2010-02-21
  cleanup() {
      killbeanstalkd
      rm -rf "$logdir" "$out1" "$out2"
-@@ -36,16 +29,7 @@ if [ ! -x ./beanstalkd ]; then
+@@ -36,16 +29,7 @@
    exit 2
  fi
  
@@ -224,7 +224,7 @@ Last-Update: 2010-02-21
  
  $nc $server $port <<EOF > "$out1"
  put 0 0 100 0
-@@ -62,14 +46,7 @@ test "$res" -eq 0 || exit $res
+@@ -62,14 +46,7 @@
  killbeanstalkd
  
  sleep .1
@@ -240,8 +240,8 @@ Last-Update: 2010-02-21
  
  $nc $server $port <<EOF > "$out2"
  delete 1
---- beanstalkd-1.4.3.orig/sh-tests/binlog-sizelimit.sh
-+++ beanstalkd-1.4.3/sh-tests/binlog-sizelimit.sh
+--- a/sh-tests/binlog-sizelimit.sh
++++ b/sh-tests/binlog-sizelimit.sh
 @@ -1,7 +1,8 @@
  #!/usr/bin/env bash
  
@@ -252,7 +252,7 @@ Last-Update: 2010-02-21
  tmpdir="$TMPDIR"
  size=1024
  truncated_size_1=796
-@@ -20,14 +21,6 @@ fail() {
+@@ -20,14 +21,6 @@
      exit 1
  }
  
@@ -267,7 +267,7 @@ Last-Update: 2010-02-21
  cleanup() {
      killbeanstalkd
      rm -rf "$logdir" "$out1" "$out2"
-@@ -51,16 +44,7 @@ if [ ! -x ./beanstalkd ]; then
+@@ -51,16 +44,7 @@
    exit 2
  fi
  
@@ -285,8 +285,8 @@ Last-Update: 2010-02-21
  
  # Check that the first binlog file is the proper size.
  test "$(fsize "$logdir"/binlog.1)" -eq $size || fail first binlog wrong size
---- beanstalkd-1.4.3.orig/sh-tests/binlog-bury.sh
-+++ beanstalkd-1.4.3/sh-tests/binlog-bury.sh
+--- a/sh-tests/binlog-bury.sh
++++ b/sh-tests/binlog-bury.sh
 @@ -1,7 +1,8 @@
  #!/usr/bin/env bash
  
@@ -297,7 +297,7 @@ Last-Update: 2010-02-21
  tmpdir="$TMPDIR"
  test -z "$tmpdir" && tmpdir=/tmp
  out1="${tmpdir}/bnch$$.1"
-@@ -10,14 +11,6 @@ logdir="${tmpdir}/bnch$$.d"
+@@ -10,14 +11,6 @@
  nc='nc -q 1'
  nc -q 1 2>&1 | grep -q "illegal option" && nc='nc -w 1' # workaround for older netcat
  
@@ -312,7 +312,7 @@ Last-Update: 2010-02-21
  cleanup() {
      killbeanstalkd
      rm -rf "$logdir" "$out1" "$out2"
-@@ -36,16 +29,7 @@ if [ ! -x ./beanstalkd ]; then
+@@ -36,16 +29,7 @@
    exit 2
  fi
  
@@ -330,8 +330,8 @@ Last-Update: 2010-02-21
  
  $nc $server $port <<EOF > "$out1"
  put 0 0 100 0
---- beanstalkd-1.4.3.orig/sh-tests/binlog-read.sh
-+++ beanstalkd-1.4.3/sh-tests/binlog-read.sh
+--- a/sh-tests/binlog-read.sh
++++ b/sh-tests/binlog-read.sh
 @@ -1,7 +1,8 @@
  #!/usr/bin/env bash
  
@@ -342,7 +342,7 @@ Last-Update: 2010-02-21
  tmpdir="$TMPDIR"
  test -z "$tmpdir" && tmpdir=/tmp
  out1="${tmpdir}/bnch$$.1"
-@@ -10,14 +11,6 @@ logdir="${tmpdir}/bnch$$.d"
+@@ -10,14 +11,6 @@
  nc='nc -q 1'
  nc -q 1 2>&1 | grep -q "illegal option" && nc='nc -w 1' # workaround for older netcat
  
@@ -357,7 +357,7 @@ Last-Update: 2010-02-21
  cleanup() {
      killbeanstalkd
      rm -rf "$logdir" "$out1" "$out2"
-@@ -36,16 +29,7 @@ if [ ! -x ./beanstalkd ]; then
+@@ -36,16 +29,7 @@
    exit 2
  fi
  
@@ -375,7 +375,7 @@ Last-Update: 2010-02-21
  
  $nc $server $port <<EOF > "$out1"
  use test
-@@ -79,14 +63,7 @@ test "$res" -eq 0 || exit $res
+@@ -79,14 +63,7 @@
  killbeanstalkd
  
  sleep 1
@@ -392,8 +392,8 @@ Last-Update: 2010-02-21
  $nc $server $port <<EOF > "$out2"
  watch test
 --- /dev/null
-+++ beanstalkd-1.4.3/sh-tests/common.functions
-@@ -0,0 +1,41 @@
++++ b/sh-tests/common.functions
+@@ -0,0 +1,42 @@
 +#!/usr/bin/env bash
 +
 +start_port=11400
