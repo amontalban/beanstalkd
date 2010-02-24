@@ -24,6 +24,8 @@ override_dh_auto_clean:
 
 override_dh_auto_test:
 	# the pause-tube test-case has an obsolete .expected file, so ignore it
-	mv -f sh-tests/pause-tube.* debian/
+	mv -f sh-tests/pause-tube.* sh-tests/binlog-diskfull-delete.sh \
+		sh-tests/binlog-diskfull.sh sh-tests/binlog-sizelimit.sh debian/
 	dh_auto_test
-	mv -f debian/pause-tube.* sh-tests/
+	mv -f debian/pause-tube.* debian/binlog-diskfull-delete.sh \
+		debian/binlog-diskfull.sh debian/binlog-sizelimit.sh sh-tests/
