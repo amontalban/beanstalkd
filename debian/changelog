@@ -1,11 +1,13 @@
 beanstalkd (1.4.3-3) unstable; urgency=low
 
-  * make-tests-more-robust-and-tidy.diff:
+  * debian/rules:
     - disable binlog-sizelimit.sh (expected binlog sizes were calculated
       assuming i386 arch), binlog-diskfull-delete.sh & binlog-diskfull.sh
       (test-scripts fail to start beanstalkd in alpha and ia64 arches; disable
       until I get access to reproduce the error)
-    - do not supress potential error messages upon beanstalkd startup
+  * make-tests-more-robust-and-tidy.diff:
+    - minor changes to improve debug-ability (do not suppress potential error
+      messages upon beanstalkd startup; echo beanstalkd invocation command)
 
  -- Serafeim Zanikolas <serzan@hellug.gr>  Wed, 24 Feb 2010 23:39:47 +0100
 
