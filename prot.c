@@ -46,7 +46,7 @@ size_t job_data_size_limit = JOB_DATA_SIZE_LIMIT_DEFAULT;
 #define NAME_CHARS \
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
     "abcdefghijklmnopqrstuvwxyz" \
-    "0123456789-+/;.$()"
+    "0123456789-+/;.$_()"
 
 #define CMD_PUT "put "
 #define CMD_PEEKJOB "peek "
@@ -218,6 +218,22 @@ size_t job_data_size_limit = JOB_DATA_SIZE_LIMIT_DEFAULT;
     "cmd-pause-tube: %u\n" \
     "pause: %" PRIu64 "\n" \
     "pause-time-left: %" PRIu64 "\n" \
+    "\r\n"
+
+#define STATS_JOB_FMT "---\n" \
+    "id: %" PRIu64 "\n" \
+    "tube: %s\n" \
+    "state: %s\n" \
+    "pri: %u\n" \
+    "age: %" PRIu64 "\n" \
+    "delay: %" PRIu64 "\n" \
+    "ttr: %" PRIu64 "\n" \
+    "time-left: %" PRIu64 "\n" \
+    "reserves: %u\n" \
+    "timeouts: %u\n" \
+    "releases: %u\n" \
+    "buries: %u\n" \
+    "kicks: %u\n" \
     "\r\n"
 
 /* this number is pretty arbitrary */
@@ -1001,6 +1017,9 @@ do_list_tubes(conn c, ms l)
     c->out_job = allocate_job(resp_z); /* fake job to hold response data */
     if (!c->out_job) return reply_serr(c, MSG_OUT_OF_MEMORY);
 
+    /* Mark this job as a copy so it can be appropriately freed later on */
+    c->out_job->state = JOB_STATE_COPY;
+
     /* now actually format the response */
     buf = c->out_job->body;
     buf += snprintf(buf, 5, "---\n");
@@ -1027,22 +1046,7 @@ fmt_job_stats(char *buf, size_t size, job j)
     } else {
         time_left = 0;
     }
-    return snprintf(buf, size,
-            "id: %" PRIu64 "\n"
-            "tube: %s\n"
-            "state: %s\n"
-            "pri: %u\n"
-            "age: %" PRIu64 "\n"
-            "delay: %" PRIu64 "\n"
-            "ttr: %" PRIu64 "\n"
-            "time-left: %" PRIu64 "\n"
-            "reserves: %u\n"
-            "timeouts: %u\n"
-            "releases: %u\n"
-            "buries: %u\n"
-            "kicks: %u\n"
-            "\r\n",
-
+    return snprintf(buf, size, STATS_JOB_FMT,
             j->id,
             j->tube->name,
             job_state(j),
