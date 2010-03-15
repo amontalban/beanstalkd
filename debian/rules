@@ -5,6 +5,8 @@
 
 # don't unnecessarily link against libnsl
 export ac_cv_lib_nsl_inet_aton=thanks_but_no
+# for beanstalkd test scripts
+export VERBOSE=1
 
 %:
 	dh $@
@@ -21,11 +23,3 @@ override_dh_auto_clean:
 	mv beanstalkd.spec beanstalkd.spec_
 	dh_auto_clean
 	mv beanstalkd.spec_ beanstalkd.spec
-
-override_dh_auto_test:
-	# the pause-tube test-case has an obsolete .expected file, so ignore it
-	mv -f sh-tests/pause-tube.* sh-tests/binlog-diskfull-delete.sh \
-		sh-tests/binlog-diskfull.sh sh-tests/binlog-sizelimit.sh debian/
-	dh_auto_test
-	mv -f debian/pause-tube.* debian/binlog-diskfull-delete.sh \
-		debian/binlog-diskfull.sh debian/binlog-sizelimit.sh sh-tests/
