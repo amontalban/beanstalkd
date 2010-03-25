@@ -3,7 +3,8 @@ Section: net
 Priority: extra
 Maintainer: Serafeim Zanikolas <serzan@hellug.gr>
 Build-Depends: debhelper (>= 7.0.50~), autotools-dev, libtool,
-               libevent-dev (>= 1.4.1), fiu-utils, procps, net-tools, python-minimal
+               libevent-dev (>= 1.4.1), fiu-utils (>=0.13-3), procps,
+               net-tools, python-minimal
 Standards-Version: 3.8.4
 Homepage: http://xph.us/software/beanstalkd/
 

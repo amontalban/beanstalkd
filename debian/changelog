@@ -1,3 +1,13 @@
+beanstalkd (1.4.4-2) unstable; urgency=low
+
+  * debian/control:Build-Depends: require fiu-utils >=0.13-3, to test
+    successfully on certain arches (see #574405 and #574752)
+  * debian/postrm: fix test of whether /var/lib/beanstalkd is empty (would
+    fail with subdirectories, which normally are not created there), and
+    revise diagnostic messages
+
+ -- Serafeim Zanikolas <serzan@hellug.gr>  Thu, 25 Mar 2010 21:58:07 +0100
+
 beanstalkd (1.4.4-1) unstable; urgency=low
 
   * New Upstream Release
