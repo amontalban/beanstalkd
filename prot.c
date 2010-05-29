@@ -797,6 +797,26 @@ fill_extra_data(conn c)
 }
 
 static void
+_skip(conn c, int n, const char *line, int len)
+{
+    /* Invert the meaning of in_job_read while throwing away data -- it
+     * counts the bytes that remain to be thrown away. */
+    c->in_job = 0;
+    c->in_job_read = n;
+    fill_extra_data(c);
+
+    if (c->in_job_read == 0) return reply(c, line, len, STATE_SENDWORD);
+
+    c->reply = line;
+    c->reply_len = len;
+    c->reply_sent = 0;
+    c->state = STATE_BITBUCKET;
+    return;
+}
+
+#define skip(c,n,m) (_skip(c,n,m,CONSTSTRLEN(m)))
+
+static void
 enqueue_incoming_job(conn c)
 {
     int r;
@@ -1176,7 +1196,8 @@ dispatch_cmd(conn c)
         if (errno) return reply_msg(c, MSG_BAD_FORMAT);
 
         if (body_size > job_data_size_limit) {
-            return reply_msg(c, MSG_JOB_TOO_BIG);
+            /* throw away the job body and respond with JOB_TOO_BIG */
+            return skip(c, body_size + 2, MSG_JOB_TOO_BIG);
         }
 
         /* don't allow trailing garbage */
@@ -1189,16 +1210,8 @@ dispatch_cmd(conn c)
         /* OOM? */
         if (!c->in_job) {
             /* throw away the job body and respond with OUT_OF_MEMORY */
-
-            /* Invert the meaning of in_job_read while throwing away data -- it
-             * counts the bytes that remain to be thrown away. */
-            c->in_job_read = body_size + 2;
-            fill_extra_data(c);
-
-            if (c->in_job_read == 0) return reply_serr(c, MSG_OUT_OF_MEMORY);
-
-            c->state = STATE_BITBUCKET;
-            return;
+            twarnx("server error: " MSG_OUT_OF_MEMORY);
+            return skip(c, body_size + 2, MSG_OUT_OF_MEMORY);
         }
 
         fill_extra_data(c);
@@ -1645,7 +1658,9 @@ h_conn_data(conn c)
 
         /* (c->in_job_read < 0) can't happen */
 
-        if (c->in_job_read == 0) return reply_serr(c, MSG_OUT_OF_MEMORY);
+        if (c->in_job_read == 0) {
+            return reply(c, c->reply, c->reply_len, STATE_SENDWORD);
+        }
         break;
     case STATE_WANTDATA:
         j = c->in_job;
@@ -1775,12 +1790,12 @@ h_accept(const int fd, const short which, struct event *ev)
     conn c;
     int cfd, flags, r;
     socklen_t addrlen;
-    struct sockaddr addr;
+    struct sockaddr_in6 addr;
 
     if (which == EV_TIMEOUT) return h_delay();
 
     addrlen = sizeof addr;
-    cfd = accept(fd, &addr, &addrlen);
+    cfd = accept(fd, (struct sockaddr *)&addr, &addrlen);
     if (cfd == -1) {
         if (errno != EAGAIN && errno != EWOULDBLOCK) twarn("accept()");
         if (errno == EMFILE) brake();
