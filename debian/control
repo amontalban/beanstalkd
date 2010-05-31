@@ -1,7 +1,7 @@
 Source: beanstalkd
 Section: net
 Priority: extra
-Maintainer: Serafeim Zanikolas <serzan@hellug.gr>
+Maintainer: Serafeim Zanikolas <sez@debian.org>
 Build-Depends: debhelper (>= 7.0.50~), autotools-dev, libtool,
                libevent-dev (>= 1.4.1), fiu-utils (>=0.13-3), procps,
                net-tools, python-minimal
