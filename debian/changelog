@@ -1,3 +1,10 @@
+beanstalkd (1.4.6-2) unstable; urgency=low
+
+  * Apply upstream patch, rename-dprintf.diff, to fix FTBFS (Closes: #632762)
+  * Bump up Standards-Version to 3.9.2 (no changes)
+
+ -- Serafeim Zanikolas <sez@debian.org>  Sun, 10 Jul 2011 20:51:11 +0200
+
 beanstalkd (1.4.6-1) unstable; urgency=medium
 
   * New upstream release
