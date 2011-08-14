@@ -1,3 +1,10 @@
+beanstalkd (1.4.6-3) unstable; urgency=high
+
+  * Patch sh-tests/common.functions to randomise the listener port during
+    build tests (Closes: #636964); high urgency due to RC bug
+
+ -- Serafeim Zanikolas <sez@debian.org>  Sun, 14 Aug 2011 15:46:45 +0200
+
 beanstalkd (1.4.6-2) unstable; urgency=low
 
   * Apply upstream patch, rename-dprintf.diff, to fix FTBFS (Closes: #632762)
