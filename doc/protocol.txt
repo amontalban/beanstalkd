@@ -245,8 +245,8 @@ RESERVED <id> <bytes>\r\n
 
 The delete command removes a job from the server entirely. It is normally used
 by the client when the job has successfully run to completion. A client can
-delete jobs that it has reserved, ready jobs, and jobs that are buried. The
-delete command looks like this:
+delete jobs that it has reserved, ready jobs, delayed jobs, and jobs that are
+buried. The delete command looks like this:
 
 delete <id>\r\n
 
@@ -431,6 +431,9 @@ to scalars. It contains these keys:
    reserved or delayed. If the job is reserved and this amount of time
    elapses before its state changes, it is considered to have timed out.
 
+ - "file" is the number of the earliest binlog file containing this job.
+   If -b wasn't used, this will be 0.
+
  - "reserves" is the number of times this job has been reserved.
 
  - "timeouts" is the number of times this job has timed out during a
@@ -478,12 +481,15 @@ to scalars. It contains these keys:
 
  - "current-jobs-buried" is the number of buried jobs in this tube.
 
- - "total-jobs" is the cumulative count of jobs created in this tube.
+ - "total-jobs" is the cumulative count of jobs created in this tube in
+   the current beanstalkd process.
 
  - "current-waiting" is the number of open connections that have issued a
    reserve command while watching this tube but not yet received a response.
 
  - "pause" is the number of seconds the tube has been paused for.
+
+ - "cmd-delete" is the cumulative number of delete commands for this tube
 
  - "cmd-pause-tube" is the cumulative number of pause-tube commands for this
    tube.
@@ -506,7 +512,8 @@ OK <bytes>\r\n
    is a YAML file with statistical information represented a dictionary.
 
 The stats data for the system is a YAML file representing a single dictionary
-of strings to scalars. It contains these keys:
+of strings to scalars. Entries described as "cumulative" are reset when the
+beanstalkd process starts; they are not stored on disk with the -b flag.
 
  - "current-jobs-urgent" is the number of ready jobs with priority < 1024.
 
@@ -584,13 +591,13 @@ of strings to scalars. It contains these keys:
 
  - "version" is the version string of the server.
 
- - "rusage-utime" is the accumulated user CPU time of this process in seconds
+ - "rusage-utime" is the cumulative user CPU time of this process in seconds
    and microseconds.
 
- - "rusage-stime" is the accumulated system CPU time of this process in
+ - "rusage-stime" is the cumulative system CPU time of this process in
    seconds and microseconds.
 
- - "uptime" is the number of seconds since this server started running.
+ - "uptime" is the number of seconds since this server process started running.
 
  - "binlog-oldest-index" is the index of the oldest binlog file needed to
    store the current jobs
@@ -600,6 +607,12 @@ of strings to scalars. It contains these keys:
 
  - "binlog-max-size" is the maximum size in bytes a binlog file is allowed
    to get before a new binlog file is opened
+
+ - "binlog-records-written" is the cumulative number of records written
+   to the binlog
+
+ - "binlog-records-migrated" is the cumulative number of records written
+   as part of compaction
 
 The list-tubes command returns a list of all existing tubes. Its form is:
 

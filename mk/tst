@@ -1,0 +1,22 @@
+check-ct: ct/_ctcheck
+	ct/_ctcheck
+.PHONY: check-ct
+
+check-shell: $(TARG)
+	./check.sh sh-tests/*.sh
+.PHONY: check-shell
+
+check: check-ct check-shell
+.PHONY: check
+
+ct/_ctcheck: ct/_ctcheck.o ct/ct.o $(OFILES) $(TOFILES)
+
+ct/_ctcheck.c: $(TOFILES) ct/gen
+	ct/gen $(TOFILES) >$@.part
+	mv $@.part $@
+
+ct/ct.o ct/_ctcheck.o: ct/ct.h ct/internal.h
+
+$(TOFILES): $(HFILES) ct/ct.h
+
+CLEANFILES:=$(CLEANFILES) ct/_* ct/*.o

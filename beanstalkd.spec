@@ -4,7 +4,7 @@
 %define beanstalkd_logdir    %{_localstatedir}/log/beanstalkd
 
 Name:           beanstalkd
-Version:        1.4.6
+Version:        1.5
 Release:        0%{?dist}
 Summary:        A simple, fast workqueue service
 
@@ -14,7 +14,6 @@ URL:            http://xph.us/software/%{name}/
 Source0:        http://xph.us/dist/%{name}/rel/%{name}-%{version}.tar.gz
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:   libevent-devel
 
 Requires(pre):      %{_sbindir}/useradd
 Requires(post):     /sbin/chkconfig
@@ -69,7 +68,7 @@ fi
 %files
 %defattr(-,root,root,-)
 %doc %{_defaultdocdir}/%{name}-%{version}/protocol.txt
-%doc README COPYING README-DEVELOPERS README-TESTS doc/protocol.txt
+%doc README COPYING doc/protocol.txt
 %{_initrddir}/%{name}
 %{_bindir}/%{name}
 %{_mandir}/man1/%{name}.1.gz
