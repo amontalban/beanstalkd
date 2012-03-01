@@ -13,11 +13,20 @@ export VERBOSE=1
 
 override_dh_auto_configure:
 	dh_auto_configure -- --disable-rpath
-	sed -i 's?sh-tests/\*\.{commands,sh}?sh-tests/*.commands sh-tests/*.sh?' \
-		Makefile
+	if ! test -f mk/inc.orig; then cp mk/inc mk/inc.orig; fi
+	# skip test that fails without the availability beanstalkd 1.4.6
+	if tes -f sh-tests/binlog-v5.sh; then mv sh-tests/binlog-v5.sh sh-tests/binlog-v5.sh.off; fi
+	# skip integration test with known false positive; see
+	# <CAD25zGCr6nxDMZWzBan7NvzmXb5d28uoDAzumtQWCKTc9qsC2Q@mail.gmail.com>
+	cp -f integ-test.c integ-test.c.orig
+	sed -i 's?.*sh-tests/pause-tube.commands.*??' integ-test.c
 
 override_dh_prep:
 	dh_prep -X beanstalkd.spec
+
+override_dh_auto_install:
+	dh_install
+	dh_installman
 
 # silly acrobatics to preserve an upstream file
 override_dh_auto_clean:
@@ -25,3 +34,6 @@ override_dh_auto_clean:
 	mv beanstalkd.spec beanstalkd.spec_
 	dh_auto_clean
 	mv beanstalkd.spec_ beanstalkd.spec
+	# restore disabled tests
+	if test -f sh-tests/binlog-v5.sh.off; then mv sh-tests/binlog-v5.sh.off sh-tests/binlog-v5.sh; fi
+	if test -f integ-test.c.orig; then mv integ-test.c.orig integ-test.c; fi

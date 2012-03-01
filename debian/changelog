@@ -1,3 +1,18 @@
+beanstalkd (1.5-1) unstable; urgency=low
+
+  * New upstream
+    - Drop Build-Depends on libevent-dev and autotools-dev
+    - Update debian/copyright to reflect new upstream license
+    - Drop debian/patches/rename-dprintf.diff (no longer necessary)
+    - Update debian/docs for some docs that are no longer shipped
+    - debian/rules: override default installation location, and skip tests
+      sh-tests/binlog-v5.sh (requires beanstalkd 1.4.6) and pause-tube (race
+      condition that may result in false positive)
+  * Point debian/watch to github instead
+  * Bump up Standards-Version to 3.9.3 (no changes)
+
+ -- Serafeim Zanikolas <sez@debian.org>  Fri, 02 Mar 2012 00:32:53 +0100
+
 beanstalkd (1.4.6-3) unstable; urgency=high
 
   * Patch sh-tests/common.functions to randomise the listener port during
