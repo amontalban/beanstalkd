@@ -1,3 +1,10 @@
+beanstalkd (1.5-2) unstable; urgency=high
+
+  * Add debian/patches/freebsd-build.diff to fix FTBFS for gnu/kfreebsd
+    (Closes: #664613); high urgency due to RC bug
+
+ -- Serafeim Zanikolas <sez@debian.org>  Sun, 01 Apr 2012 15:33:27 +0200
+
 beanstalkd (1.5-1) unstable; urgency=low
 
   * New upstream
