@@ -4,10 +4,11 @@
 # Last-Update: 2012-04-01
 --- a/mk/inc
 +++ b/mk/inc
-@@ -2,5 +2,5 @@
+@@ -2,6 +2,6 @@
  BINDIR=$(PREFIX)/bin
  CFLAGS=-Wall -Werror
  LDFLAGS=
 -OS=$(shell uname -s | tr A-Z a-z)
 +OS=$(shell uname -s | tr A-Z a-z | sed 's?gnu/kfreebsd?freebsd?')
  INSTALL=install
+ TAR=tar
