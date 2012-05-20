@@ -94,7 +94,7 @@ ratio(Wal *w)
     int n, d;
 
     d = w->alive + w->resv;
-    n = w->nfile*w->filesz - d;
+    n = w->nfile*w->filesize - d;
     if (!d) return 0;
     return n / d;
 }
@@ -457,7 +457,7 @@ walread(Wal *w, job list, int min, int max)
 
         fd = open(f->path, O_RDONLY);
         if (fd < 0) {
-            twarn("%s", f->path);
+            twarn("open %s", f->path);
             free(f->path);
             free(f);
             continue;

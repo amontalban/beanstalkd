@@ -17,6 +17,8 @@ static int  readrec(File*, job, int*);
 static int  readrec5(File*, job, int*);
 static int  readfull(File*, void*, int, int*, char*);
 
+FAlloc *falloc = &rawfalloc;
+
 enum
 {
     Walver5 = 5
@@ -425,11 +427,15 @@ filewopen(File *f)
         return;
     }
 
-    r = falloc(fd, f->w->filesz);
+    r = falloc(fd, f->w->filesize);
     if (r) {
         close(fd);
         errno = r;
-        twarn("Cannot allocate space for file %s", f->path);
+        twarn("falloc %s", f->path);
+        r = unlink(f->path);
+        if (r) {
+            twarn("unlink %s", f->path);
+        }
         return;
     }
 
@@ -443,7 +449,7 @@ filewopen(File *f)
     f->fd = fd;
     f->iswopen = 1;
     fileincref(f);
-    f->free = f->w->filesz - n;
+    f->free = f->w->filesize - n;
     f->resv = 0;
 }
 
@@ -507,7 +513,7 @@ filewclose(File *f)
     if (!f) return;
     if (!f->iswopen) return;
     if (f->free) {
-        (void)ftruncate(f->fd, f->w->filesz - f->free);
+        (void)ftruncate(f->fd, f->w->filesize - f->free);
     }
     close(f->fd);
     f->iswopen = 0;
