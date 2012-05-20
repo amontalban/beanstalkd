@@ -2,8 +2,7 @@ Source: beanstalkd
 Section: net
 Priority: extra
 Maintainer: Serafeim Zanikolas <sez@debian.org>
-Build-Depends: debhelper (>= 7.0.50~), libtool, fiu-utils (>=0.13-3), procps,
-               net-tools, python-minimal
+Build-Depends: debhelper (>= 7.0.50~), libtool, net-tools
 Standards-Version: 3.9.3
 Homepage: http://xph.us/software/beanstalkd/
 

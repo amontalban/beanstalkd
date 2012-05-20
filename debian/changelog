@@ -1,3 +1,13 @@
+beanstalkd (1.6-1) unstable; urgency=low
+
+  * New upstream
+    - drop build dependencies (python-minimal, procps, fiu-utils) due to
+      re-organisation of tests
+    - debian/rules: do not disable any tests
+    - drop debian/patches/randomise-port.diff
+
+ -- Serafeim Zanikolas <sez@debian.org>  Sun, 20 May 2012 18:57:56 +0200
+
 beanstalkd (1.5-2) unstable; urgency=high
 
   * Add debian/patches/freebsd-build.diff to fix FTBFS for gnu/kfreebsd
