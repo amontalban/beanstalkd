@@ -27,19 +27,19 @@ on_ignore(ms a, tube t, size_t i)
     tube_dref(t);
 }
 
-conn
+Conn *
 make_conn(int fd, char start_state, tube use, tube watch)
 {
     job j;
-    conn c;
+    Conn *c;
 
-    c = new(struct conn);
-    if (!c) return twarn("OOM"), (conn) 0;
+    c = new(Conn);
+    if (!c) return twarn("OOM"), NULL;
 
     ms_init(&c->watch, (ms_event_fn) on_watch, (ms_event_fn) on_ignore);
     if (!ms_append(&c->watch, watch)) {
         free(c);
-        return twarn("OOM"), (conn) 0;
+        return twarn("OOM"), NULL;
     }
 
     TUBE_ASSIGN(c->use, use);
@@ -49,7 +49,6 @@ make_conn(int fd, char start_state, tube use, tube watch)
     c->state = start_state;
     c->pending_timeout = -1;
     c->tickpos = -1;
-    c->prev = c->next = c; /* must be out of a linked list right now */
     j = &c->reserved_jobs;
     j->prev = j->next = j;
 
@@ -61,7 +60,7 @@ make_conn(int fd, char start_state, tube use, tube watch)
 }
 
 void
-conn_set_producer(conn c)
+connsetproducer(Conn *c)
 {
     if (c->type & CONN_TYPE_PRODUCER) return;
     c->type |= CONN_TYPE_PRODUCER;
@@ -69,7 +68,7 @@ conn_set_producer(conn c)
 }
 
 void
-conn_set_worker(conn c)
+connsetworker(Conn *c)
 {
     if (c->type & CONN_TYPE_WORKER) return;
     c->type |= CONN_TYPE_WORKER;
@@ -101,14 +100,14 @@ count_cur_workers()
 }
 
 static int
-has_reserved_job(conn c)
+has_reserved_job(Conn *c)
 {
     return job_list_any_p(&c->reserved_jobs);
 }
 
 
 static int64
-conntickat(conn c)
+conntickat(Conn *c)
 {
     int margin = 0, should_timeout = 0;
     int64 t = INT64_MAX;
@@ -118,7 +117,7 @@ conntickat(conn c)
     }
 
     if (has_reserved_job(c)) {
-        t = soonest_job(c)->r.deadline_at - nanoseconds() - margin;
+        t = connsoonestjob(c)->r.deadline_at - nanoseconds() - margin;
         should_timeout = 1;
     }
     if (c->pending_timeout >= 0) {
@@ -134,55 +133,25 @@ conntickat(conn c)
 
 
 void
-connwant(conn c, int rw, conn list)
+connwant(Conn *c, int rw)
 {
     c->rw = rw;
-    conn_insert(list, c);
     connsched(c);
 }
 
 
 void
-connsched(conn c)
+connsched(Conn *c)
 {
     c->tickat = conntickat(c);
     srvschedconn(c->srv, c);
 }
 
 
-static int
-conn_list_any_p(conn head)
-{
-    return head->next != head || head->prev != head;
-}
-
-conn
-conn_remove(conn c)
-{
-    if (!conn_list_any_p(c)) return NULL; /* not in a doubly-linked list */
-
-    c->next->prev = c->prev;
-    c->prev->next = c->next;
-
-    c->prev = c->next = c;
-    return c;
-}
-
-void
-conn_insert(conn head, conn c)
-{
-    if (conn_list_any_p(c)) return; /* already in a linked list */
-
-    c->prev = head->prev;
-    c->next = head;
-    head->prev->next = c;
-    head->prev = c;
-}
-
 /* return the reserved job with the earliest deadline,
  * or NULL if there's no reserved job */
 job
-soonest_job(conn c)
+connsoonestjob(Conn *c)
 {
     job j = NULL;
     job soonest = c->soonest_job;
@@ -196,25 +165,20 @@ soonest_job(conn c)
     return soonest;
 }
 
-int
-has_reserved_this_job(conn c, job j)
-{
-    return j && j->r.state == Reserved && j->reserver == c;
-}
 
 /* return true if c has a reserved job with less than one second until its
  * deadline */
 int
-conn_has_close_deadline(conn c)
+conndeadlinesoon(Conn *c)
 {
     int64 t = nanoseconds();
-    job j = soonest_job(c);
+    job j = connsoonestjob(c);
 
     return j && t >= j->r.deadline_at - SAFETY_MARGIN;
 }
 
 int
-conn_ready(conn c)
+conn_ready(Conn *c)
 {
     size_t i;
 
@@ -226,21 +190,21 @@ conn_ready(conn c)
 
 
 int
-connless(conn a, conn b)
+connless(Conn *a, Conn *b)
 {
     return a->tickat < b->tickat;
 }
 
 
 void
-connrec(conn c, int i)
+connrec(Conn *c, int i)
 {
     c->tickpos = i;
 }
 
 
 void
-conn_close(conn c)
+connclose(Conn *c)
 {
     sockwant(&c->sock, 0);
     close(c->sock.fd);
@@ -262,7 +226,6 @@ conn_close(conn c)
     cur_conn_ct--; /* stats */
 
     remove_waiting_conn(c);
-    conn_remove(c);
     if (has_reserved_job(c)) enqueue_reserved_jobs(c);
 
     ms_clear(&c->watch);
@@ -273,5 +236,6 @@ conn_close(conn c)
         heapremove(&c->srv->conns, c->tickpos);
     }
 
+    protrmdirty(c);
     free(c);
 }

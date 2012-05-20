@@ -16,12 +16,12 @@ typedef uint64_t      uint64;
 typedef struct ms     *ms;
 typedef struct job    *job;
 typedef struct tube   *tube;
-typedef struct conn   *conn;
+typedef struct Conn   Conn;
 typedef struct Heap   Heap;
 typedef struct Jobrec Jobrec;
 typedef struct File   File;
 typedef struct Socket Socket;
-typedef struct Srv    Srv;
+typedef struct Server Server;
 typedef struct Wal    Wal;
 
 typedef void(*evh)(int, short, void *);
@@ -29,6 +29,7 @@ typedef void(*ms_event_fn)(ms a, void *item, size_t i);
 typedef void(*Handle)(void*, int rw); // rw can also be 'h' for hangup
 typedef int(*Less)(void*, void*);
 typedef void(*Record)(void*, int);
+typedef int(FAlloc)(int, int);
 
 #if _LP64
 #define NUM_PRIMES 48
@@ -60,6 +61,10 @@ typedef void(*Record)(void*, int);
 
 extern const char version[];
 extern int verbose;
+extern struct Server srv;
+
+// Replaced by tests to simulate failures.
+extern FAlloc *falloc;
 
 struct stats {
     uint urgent_ct;
@@ -165,47 +170,6 @@ struct tube {
     struct job buried;
 };
 
-struct conn {
-    conn prev, next; /* linked list of connections */
-    Srv *srv;
-    Socket sock;
-    char state;
-    char type;
-    int rw; // currently want: 'r' or 'w'
-    int pending_timeout;
-    int64 tickat; // time at which to do more work
-    int tickpos; // position in srv->conns
-
-    /* we cannot share this buffer with the reply line because we might read in
-     * command line data for a subsequent command, and we need to store it
-     * here. */
-    char cmd[LINE_BUF_SIZE]; /* this string is NOT NUL-terminated */
-    int cmd_len;
-    int cmd_read;
-    const char *reply;
-    int reply_len;
-    int reply_sent;
-    char reply_buf[LINE_BUF_SIZE]; /* this string IS NUL-terminated */
-
-    /* A job to be read from the client. */
-    job in_job;
-
-    /* Memoization of the soonest job */
-    job soonest_job;
-
-    /* How many bytes of in_job->body have been read so far. If in_job is NULL
-     * while in_job_read is nonzero, we are in bit bucket mode and
-     * in_job_read's meaning is inverted -- then it counts the bytes that
-     * remain to be thrown away. */
-    int in_job_read;
-
-    job out_job;
-    int out_job_sent;
-    tube use;
-    struct ms watch;
-    struct job reserved_jobs; /* doubly-linked list header */
-};
-
 
 void v(void);
 
@@ -214,11 +178,12 @@ void warnx(const char *fmt, ...);
 char* fmtalloc(char *fmt, ...);
 void* zalloc(int n);
 #define new(T) zalloc(sizeof(T))
+void optparse(Server*, char**);
 
 extern const char *progname;
 
 int64 nanoseconds(void);
-int   falloc(int fd, int len);
+int   rawfalloc(int fd, int len);
 
 
 void ms_init(ms a, ms_event_fn oninsert, ms_event_fn onremove);
@@ -268,32 +233,12 @@ tube tube_find_or_make(const char *name);
 #define TUBE_ASSIGN(a,b) (tube_dref(a), (a) = (b), tube_iref(a))
 
 
-conn make_conn(int fd, char start_state, tube use, tube watch);
-
-int  connless(conn a, conn b);
-void connrec(conn c, int i);
-void connwant(conn c, const int mask, conn list);
-void connsched(conn c);
-
-void conn_close(conn c);
-
-conn conn_remove(conn c);
-void conn_insert(conn head, conn c);
+Conn *make_conn(int fd, char start_state, tube use, tube watch);
 
 int count_cur_conns(void);
 uint count_tot_conns(void);
 int count_cur_producers(void);
 int count_cur_workers(void);
-
-void conn_set_producer(conn c);
-void conn_set_worker(conn c);
-
-job soonest_job(conn c);
-int has_reserved_this_job(conn c, job j);
-int conn_has_close_deadline(conn c);
-int conn_ready(conn c);
-
-#define conn_waiting(c) ((c)->type & CONN_TYPE_WAITING)
 
 
 extern size_t primes[];
@@ -302,19 +247,70 @@ extern size_t primes[];
 extern size_t job_data_size_limit;
 
 void prot_init(void);
-void prottick(Srv *s);
+void prottick(Server *s);
+void protrmdirty(Conn*);
 
-conn remove_waiting_conn(conn c);
+Conn *remove_waiting_conn(Conn *c);
 
-void enqueue_reserved_jobs(conn c);
+void enqueue_reserved_jobs(Conn *c);
 
 void enter_drain_mode(int sig);
-void h_accept(const int fd, const short which, Srv* srv);
+void h_accept(const int fd, const short which, Server* srv);
 void prot_remove_tube(tube t);
-void prot_replay(Srv *s, job list);
+void prot_replay(Server *s, job list);
 
 
 int make_server_socket(char *host_addr, char *port);
+
+
+struct Conn {
+    Server *srv;
+    Socket sock;
+    char   state;
+    char   type;
+    Conn   *next;
+    tube   use;
+    int64  tickat;      // time at which to do more work
+    int    tickpos;     // position in srv->conns
+    job    soonest_job; // memoization of the soonest job
+    int    rw;          // currently want: 'r', 'w', or 'h'
+    int    pending_timeout;
+
+    char cmd[LINE_BUF_SIZE]; // this string is NOT NUL-terminated
+    int  cmd_len;
+    int  cmd_read;
+
+    char *reply;
+    int  reply_len;
+    int  reply_sent;
+    char reply_buf[LINE_BUF_SIZE]; // this string IS NUL-terminated
+
+    // How many bytes of in_job->body have been read so far. If in_job is NULL
+    // while in_job_read is nonzero, we are in bit bucket mode and
+    // in_job_read's meaning is inverted -- then it counts the bytes that
+    // remain to be thrown away.
+    int in_job_read;
+    job in_job; // a job to be read from the client
+
+    job out_job;
+    int out_job_sent;
+
+    struct ms  watch;
+    struct job reserved_jobs; // linked list header
+};
+int  connless(Conn *a, Conn *b);
+void connrec(Conn *c, int i);
+void connwant(Conn *c, int rw);
+void connsched(Conn *c);
+void connclose(Conn *c);
+void connsetproducer(Conn *c);
+void connsetworker(Conn *c);
+job  connsoonestjob(Conn *c);
+int  conndeadlinesoon(Conn *c);
+int conn_ready(Conn *c);
+#define conn_waiting(c) ((c)->type & CONN_TYPE_WAITING)
+
+
 
 
 enum
@@ -323,6 +319,7 @@ enum
 };
 
 struct Wal {
+    int    filesize;
     int    use;
     char   *dir;
     File   *head;
@@ -330,7 +327,6 @@ struct Wal {
     File   *tail;
     int    nfile;
     int    next;
-    int    filesz;
     int    resv;  // bytes reserved
     int    alive; // bytes in use
     int64  nmig;  // migrations
@@ -375,12 +371,18 @@ int  filewrjobshort(File*, job);
 int  filewrjobfull(File*, job);
 
 
-struct Srv {
+#define Portdef "11300"
+
+struct Server {
+    char *port;
+    char *addr;
+    char *user;
+
+    Wal    wal;
     Socket sock;
     Heap   conns;
-    Wal    wal;
 };
-void srv(Srv *srv);
-void srvaccept(Srv *s, int ev);
-void srvschedconn(Srv *srv, conn c);
-void srvtick(Srv *s, int ev);
+void srvserve(Server *srv);
+void srvaccept(Server *s, int ev);
+void srvschedconn(Server *srv, Conn *c);
+void srvtick(Server *s, int ev);
