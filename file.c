@@ -158,6 +158,12 @@ readrec(File *f, job l, int *err)
         return 0;
     }
 
+    if (namelen < 0) {
+        warnpos(f, -r, "namelen %d is negative", namelen);
+        *err = 1;
+        return 0;
+    }
+
     if (namelen) {
         r = readfull(f, tubename, namelen, err, "tube name");
         if (!r) {
@@ -194,6 +200,10 @@ readrec(File *f, job l, int *err)
     case Buried:
     case Delayed:
         if (!j) {
+            if (jr.body_size > job_data_size_limit) {
+                warnpos(f, -r, "job %"PRIu64" is too big (%zd > %zd)", jr.id, job_data_size_limit);
+                goto Error;
+            }
             t = tube_find_or_make(tubename);
             j = make_job_with_id(jr.pri, jr.delay, jr.ttr, jr.body_size,
                                  t, jr.id);
@@ -311,6 +321,10 @@ readrec5(File *f, job l, int *err)
     case Buried:
     case Delayed:
         if (!j) {
+            if (jr.body_size > job_data_size_limit) {
+                warnpos(f, -r, "job %"PRIu64" is too big (%zd > %zd)", jr.id, job_data_size_limit);
+                goto Error;
+            }
             t = tube_find_or_make(tubename);
             j = make_job_with_id(jr.pri, jr.delay, jr.ttr, jr.body_size,
                                  t, jr.id);

@@ -19,7 +19,7 @@
 #include "dat.h"
 
 static int srvpid, port, fd, size;
-static int64 timeout = 5000000000; // 5s
+static int64 timeout = 5000000000LL; // 5s
 static char dir[] = "/tmp/beanstalkd.test.XXXXXX";
 
 static byte fallocpat[3];
@@ -96,7 +96,7 @@ mustdiallocal(int port)
 static int
 mustforksrv()
 {
-    int r, len, port;
+    int r, len, port, ok;
     struct sockaddr_in addr;
 
     srv.sock.fd = make_server_socket("127.0.0.1", "0");
@@ -140,7 +140,11 @@ mustforksrv()
 
         list.prev = list.next = &list;
         walinit(&srv.wal, &list);
-        prot_replay(&srv, &list);
+        ok = prot_replay(&srv, &list);
+        if (!ok) {
+            twarnx("failed to replay log");
+            exit(11);
+        }
     }
 
     srvserve(&srv); /* does not return */
@@ -151,7 +155,8 @@ mustforksrv()
 static char *
 readline(int fd)
 {
-    int r, c = 0, p = 0, i = 0;
+    int r, i = 0;
+    char c = 0, p = 0;
     static char buf[1024];
     fd_set rfd;
     struct timeval tv;

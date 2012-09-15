@@ -830,7 +830,6 @@ enqueue_incoming_job(Conn *c)
     r = enqueue_job(c->srv, j, j->r.delay, 1);
     if (r < 0) return reply_serr(c, MSG_INTERNAL_ERROR);
 
-    op_ct[OP_PUT]++; /* stats */
     global_stat.total_jobs_ct++;
     j->tube->stat.total_jobs_ct++;
 
@@ -932,7 +931,7 @@ read_pri(uint *pri, const char *buf, char **end)
 
     errno = 0;
     while (buf[0] == ' ') buf++;
-    if (!isdigit(buf[0])) return -1;
+    if (buf[0] < '0' || '9' < buf[0]) return -1;
     tpri = strtoul(buf, &tend, 10);
     if (tend == buf) return -1;
     if (errno && errno != ERANGE) return -1;
@@ -1200,6 +1199,8 @@ dispatch_cmd(Conn *c)
         errno = 0;
         body_size = strtoul(size_buf, &end_buf, 10);
         if (errno) return reply_msg(c, MSG_BAD_FORMAT);
+
+        op_ct[type]++;
 
         if (body_size > job_data_size_limit) {
             /* throw away the job body and respond with JOB_TOO_BIG */
@@ -1776,11 +1777,6 @@ h_conn(const int fd, const short which, Conn *c)
         return;
     }
 
-    if (which == 'h') {
-        connclose(c);
-        return;
-    }
-
     conn_data(c);
     while (cmd_data_ready(c) && (c->cmd_len = cmd_len(c))) do_cmd(c);
     update_conns();
@@ -1912,17 +1908,25 @@ prot_init()
     if (!default_tube) twarnx("Out of memory during startup!");
 }
 
-void
+// For each job in list, inserts the job into the appropriate data
+// structures and adds it to the log.
+//
+// Returns 1 on success, 0 on failure.
+int
 prot_replay(Server *s, job list)
 {
     job j, nj;
     int64 t, delay;
-    int r;
+    int r, z;
 
     for (j = list->next ; j != list ; j = nj) {
         nj = j->next;
         job_remove(j);
-        walresvupdate(&s->wal, j); /* reserve space for a delete */
+        z = walresvupdate(&s->wal, j);
+        if (!z) {
+            twarnx("failed to reserve space");
+            return 0;
+        }
         delay = 0;
         switch (j->r.state) {
         case Buried:
@@ -1939,4 +1943,5 @@ prot_replay(Server *s, job list)
             if (r < 1) twarnx("error recovering job %"PRIu64, j->r.id);
         }
     }
+    return 1;
 }
