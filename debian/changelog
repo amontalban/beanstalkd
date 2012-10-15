@@ -1,3 +1,13 @@
+beanstalkd (1.4.6-4) testing-proposed-updates; urgency=low
+
+  * Add fiu-fix.diff (upstream commit 3176e28) to fix FTBFS due to
+    fiu-ctrl silently ignoring obsolete command line arguments
+    (Closes: #687402)
+  * Add Vcs-* headers in debian/control
+  * Bump up Standards-Version to 3.9.3 (no changes)
+
+ -- Serafeim Zanikolas <sez@debian.org>  Mon, 08 Oct 2012 18:57:43 +0200
+
 beanstalkd (1.4.6-3) unstable; urgency=high
 
   * Patch sh-tests/common.functions to randomise the listener port during
