@@ -225,7 +225,8 @@ the server automatically releases it.
 TIMED_OUT\r\n
 
 If a non-negative timeout was specified and the timeout exceeded before a job
-became available, the server will respond with TIMED_OUT.
+became available, or if the client's connection is half-closed, the server
+will respond with TIMED_OUT.
 
 Otherwise, the only other response to this command is a successful reservation
 in the form of a text line followed by the job body:
@@ -395,6 +396,22 @@ KICKED <count>\r\n
 
  - <count> is an integer indicating the number of jobs actually kicked.
 
+The kick-job command is a variant of kick that operates with a single job
+identified by its job id. If the given job id exists and is in a buried or
+delayed state, it will be moved to the ready queue of the the same tube where it
+currently belongs. The syntax is:
+
+kick-job <id>\r\n
+
+ - <id> is the job id to kick.
+
+The response is one of:
+
+ - "NOT_FOUND\r\n" if the job does not exist or is not in a kickable state. This
+   can also happen upon internal errors.
+
+ - "KICKED\r\n" when the operation succeeded.
+
 The stats-job command gives statistical information about the specified job if
 it exists. Its form is:
 
@@ -484,8 +501,14 @@ to scalars. It contains these keys:
  - "total-jobs" is the cumulative count of jobs created in this tube in
    the current beanstalkd process.
 
+ - "current-using" is the number of open connections that are currently
+   using this tube.
+
  - "current-waiting" is the number of open connections that have issued a
    reserve command while watching this tube but not yet received a response.
+
+ - "current-watching" is the number of open connections that are currently
+   watching this tube.
 
  - "pause" is the number of seconds the tube has been paused for.
 

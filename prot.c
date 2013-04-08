@@ -10,7 +10,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <ctype.h>
 #include <inttypes.h>
 #include <stdarg.h>
 #include "dat.h"
@@ -34,6 +33,7 @@ size_t job_data_size_limit = JOB_DATA_SIZE_LIMIT_DEFAULT;
 #define CMD_RELEASE "release "
 #define CMD_BURY "bury "
 #define CMD_KICK "kick "
+#define CMD_JOBKICK "kick-job "
 #define CMD_TOUCH "touch "
 #define CMD_STATS "stats"
 #define CMD_JOBSTATS "stats-job "
@@ -59,6 +59,7 @@ size_t job_data_size_limit = JOB_DATA_SIZE_LIMIT_DEFAULT;
 #define CMD_RELEASE_LEN CONSTSTRLEN(CMD_RELEASE)
 #define CMD_BURY_LEN CONSTSTRLEN(CMD_BURY)
 #define CMD_KICK_LEN CONSTSTRLEN(CMD_KICK)
+#define CMD_JOBKICK_LEN CONSTSTRLEN(CMD_JOBKICK)
 #define CMD_TOUCH_LEN CONSTSTRLEN(CMD_TOUCH)
 #define CMD_STATS_LEN CONSTSTRLEN(CMD_STATS)
 #define CMD_JOBSTATS_LEN CONSTSTRLEN(CMD_JOBSTATS)
@@ -79,6 +80,7 @@ size_t job_data_size_limit = JOB_DATA_SIZE_LIMIT_DEFAULT;
 #define MSG_DELETED "DELETED\r\n"
 #define MSG_RELEASED "RELEASED\r\n"
 #define MSG_BURIED "BURIED\r\n"
+#define MSG_KICKED "KICKED\r\n"
 #define MSG_TOUCHED "TOUCHED\r\n"
 #define MSG_BURIED_FMT "BURIED %"PRIu64"\r\n"
 #define MSG_INSERTED_FMT "INSERTED %"PRIu64"\r\n"
@@ -89,6 +91,7 @@ size_t job_data_size_limit = JOB_DATA_SIZE_LIMIT_DEFAULT;
 #define MSG_TOUCHED_LEN CONSTSTRLEN(MSG_TOUCHED)
 #define MSG_RELEASED_LEN CONSTSTRLEN(MSG_RELEASED)
 #define MSG_BURIED_LEN CONSTSTRLEN(MSG_BURIED)
+#define MSG_KICKED_LEN CONSTSTRLEN(MSG_KICKED)
 #define MSG_NOT_IGNORED_LEN CONSTSTRLEN(MSG_NOT_IGNORED)
 
 #define MSG_OUT_OF_MEMORY "OUT_OF_MEMORY\r\n"
@@ -130,7 +133,8 @@ size_t job_data_size_limit = JOB_DATA_SIZE_LIMIT_DEFAULT;
 #define OP_TOUCH 21
 #define OP_QUIT 22
 #define OP_PAUSE_TUBE 23
-#define TOTAL_OPS 24
+#define OP_JOBKICK 24
+#define TOTAL_OPS 25
 
 #define STATS_FMT "---\n" \
     "current-jobs-urgent: %u\n" \
@@ -255,7 +259,8 @@ static const char * op_names[] = {
     CMD_RESERVE_TIMEOUT,
     CMD_TOUCH,
     CMD_QUIT,
-    CMD_PAUSE_TUBE
+    CMD_PAUSE_TUBE,
+    CMD_JOBKICK,
 };
 
 static job remove_buried_job(job j);
@@ -307,6 +312,10 @@ protrmdirty(Conn *c)
 
 #define reply_serr(c,e) (twarnx("server error: %s",(e)),\
                          reply_msg((c),(e)))
+
+static void
+reply_line(Conn*, int, const char*, ...)
+__attribute__((format(printf, 3, 4)));
 
 static void
 reply_line(Conn *c, int state, const char *fmt, ...)
@@ -518,18 +527,16 @@ delay_q_take()
 }
 
 static int
-kick_buried_job(Server *s, tube t)
+kick_buried_job(Server *s, job j)
 {
     int r;
-    job j;
     int z;
 
-    if (!buried_job_p(t)) return 0;
-    j = remove_buried_job(t->buried.next);
-
     z = walresvupdate(&s->wal, j);
-    if (!z) return heapinsert(&t->delay, j), 0; /* put it back */
+    if (!z) return 0;
     j->walresv += z;
+
+    remove_buried_job(j);
 
     j->r.kick_ct++;
     r = enqueue_job(s, j, 0, 1);
@@ -555,21 +562,16 @@ get_delayed_job_ct()
 }
 
 static int
-kick_delayed_job(Server *s, tube t)
+kick_delayed_job(Server *s, job j)
 {
     int r;
-    job j;
     int z;
 
-    if (t->delay.len == 0) {
-        return 0;
-    }
-
-    j = heapremove(&t->delay, 0);
-
     z = walresvupdate(&s->wal, j);
-    if (!z) return heapinsert(&t->delay, j), 0; /* put it back */
+    if (!z) return 0;
     j->walresv += z;
+
+    heapremove(&j->tube->delay, j->heap_index);
 
     j->r.kick_ct++;
     r = enqueue_job(s, j, 0, 1);
@@ -589,7 +591,9 @@ static uint
 kick_buried_jobs(Server *s, tube t, uint n)
 {
     uint i;
-    for (i = 0; (i < n) && kick_buried_job(s, t); ++i);
+    for (i = 0; (i < n) && buried_job_p(t); ++i) {
+        kick_buried_job(s, t->buried.next);
+    }
     return i;
 }
 
@@ -598,7 +602,9 @@ static uint
 kick_delayed_jobs(Server *s, tube t, uint n)
 {
     uint i;
-    for (i = 0; (i < n) && kick_delayed_job(s, t); ++i);
+    for (i = 0; (i < n) && (t->delay.len > 0); ++i) {
+        kick_delayed_job(s, (job)t->delay.data[0]);
+    }
     return i;
 }
 
@@ -731,6 +737,7 @@ which_cmd(Conn *c)
     TEST_CMD(c->cmd, CMD_RELEASE, OP_RELEASE);
     TEST_CMD(c->cmd, CMD_BURY, OP_BURY);
     TEST_CMD(c->cmd, CMD_KICK, OP_KICK);
+    TEST_CMD(c->cmd, CMD_JOBKICK, OP_JOBKICK);
     TEST_CMD(c->cmd, CMD_TOUCH, OP_TOUCH);
     TEST_CMD(c->cmd, CMD_JOBSTATS, OP_JOBSTATS);
     TEST_CMD(c->cmd, CMD_STATS_TUBE, OP_STATS_TUBE);
@@ -1049,7 +1056,7 @@ do_list_tubes(Conn *c, ms l)
     buf[1] = '\n';
 
     c->out_job_sent = 0;
-    return reply_line(c, STATE_SENDJOB, "OK %d\r\n", resp_z - 2);
+    return reply_line(c, STATE_SENDJOB, "OK %zu\r\n", resp_z - 2);
 }
 
 static int
@@ -1404,6 +1411,23 @@ dispatch_cmd(Conn *c)
         i = kick_jobs(c->srv, c->use, count);
 
         return reply_line(c, STATE_SENDWORD, "KICKED %u\r\n", i);
+    case OP_JOBKICK:
+        errno = 0;
+        id = strtoull(c->cmd + CMD_JOBKICK_LEN, &end_buf, 10);
+        if (errno) return twarn("strtoull"), reply_msg(c, MSG_BAD_FORMAT);
+
+        op_ct[type]++;
+
+        j = job_find(id);
+        if (!j) return reply(c, MSG_NOTFOUND, MSG_NOTFOUND_LEN, STATE_SENDWORD);
+
+        if ((j->r.state == Buried && kick_buried_job(c->srv, j)) ||
+            (j->r.state == Delayed && kick_delayed_job(c->srv, j))) {
+            reply(c, MSG_KICKED, MSG_KICKED_LEN, STATE_SENDWORD);
+        } else {
+            return reply(c, MSG_NOTFOUND, MSG_NOTFOUND_LEN, STATE_SENDWORD);
+        }
+        break;
     case OP_TOUCH:
         errno = 0;
         id = strtoull(c->cmd + CMD_TOUCH_LEN, &end_buf, 10);
@@ -1509,7 +1533,7 @@ dispatch_cmd(Conn *c)
         TUBE_ASSIGN(t, NULL);
         if (!r) return reply_serr(c, MSG_OUT_OF_MEMORY);
 
-        reply_line(c, STATE_SENDWORD, "WATCHING %d\r\n", c->watch.used);
+        reply_line(c, STATE_SENDWORD, "WATCHING %zu\r\n", c->watch.used);
         break;
     case OP_IGNORE:
         name = c->cmd + CMD_IGNORE_LEN;
@@ -1528,7 +1552,7 @@ dispatch_cmd(Conn *c)
         if (t) ms_remove(&c->watch, t); /* may free t if refcount => 0 */
         t = NULL;
 
-        reply_line(c, STATE_SENDWORD, "WATCHING %d\r\n", c->watch.used);
+        reply_line(c, STATE_SENDWORD, "WATCHING %zu\r\n", c->watch.used);
         break;
     case OP_QUIT:
         connclose(c);
@@ -1740,7 +1764,10 @@ conn_data(Conn *c)
         /* otherwise we sent incomplete data, so just keep waiting */
         break;
     case STATE_WAIT:
-        // nothing
+        if (c->halfclosed) {
+            c->pending_timeout = -1;
+            return reply_msg(remove_waiting_conn(c), MSG_TIMED_OUT);
+        }
         break;
     }
 }
@@ -1775,6 +1802,10 @@ h_conn(const int fd, const short which, Conn *c)
         connclose(c);
         update_conns();
         return;
+    }
+
+    if (which == 'h') {
+        c->halfclosed = 1;
     }
 
     conn_data(c);

@@ -24,9 +24,8 @@ typedef struct Socket Socket;
 typedef struct Server Server;
 typedef struct Wal    Wal;
 
-typedef void(*evh)(int, short, void *);
 typedef void(*ms_event_fn)(ms a, void *item, size_t i);
-typedef void(*Handle)(void*, int rw); // rw can also be 'h' for hangup
+typedef void(*Handle)(void*, int rw);
 typedef int(*Less)(void*, void*);
 typedef void(*Record)(void*, int);
 typedef int(FAlloc)(int, int);
@@ -50,11 +49,6 @@ typedef int(FAlloc)(int, int);
 #define CONN_TYPE_WAITING  4
 
 #define min(a,b) ((a)<(b)?(a):(b))
-
-#define twarn(fmt, args...) warn("%s:%d in %s: " fmt, \
-                                 __FILE__, __LINE__, __func__, ##args)
-#define twarnx(fmt, args...) warnx("%s:%d in %s: " fmt, \
-                                   __FILE__, __LINE__, __func__, ##args)
 
 #define URGENT_THRESHOLD 1024
 #define JOB_DATA_SIZE_LIMIT_DEFAULT ((1 << 16) - 1)
@@ -94,10 +88,9 @@ struct Socket {
     void   *x;
     int    added;
 };
-
-void sockinit(Handle tick, void *x, int64 ns);
-int  sockwant(Socket *s, int rw);
-void sockmain(void); // does not return
+int sockinit(void);
+int sockwant(Socket*, int);
+int socknext(Socket**, int64);
 
 struct ms {
     size_t used, cap, last;
@@ -171,11 +164,14 @@ struct tube {
 };
 
 
-void v(void);
+#define twarn(fmt, args...) warn("%s:%d in %s: " fmt, \
+                                 __FILE__, __LINE__, __func__, ##args)
+#define twarnx(fmt, args...) warnx("%s:%d in %s: " fmt, \
+                                   __FILE__, __LINE__, __func__, ##args)
 
-void warn(const char *fmt, ...);
-void warnx(const char *fmt, ...);
-char* fmtalloc(char *fmt, ...);
+void warn(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+void warnx(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+char* fmtalloc(char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void* zalloc(int n);
 #define new(T) zalloc(sizeof(T))
 void optparse(Server*, char**);
@@ -275,6 +271,7 @@ struct Conn {
     job    soonest_job; // memoization of the soonest job
     int    rw;          // currently want: 'r', 'w', or 'h'
     int    pending_timeout;
+    char   halfclosed;
 
     char cmd[LINE_BUF_SIZE]; // this string is NOT NUL-terminated
     int  cmd_len;
@@ -384,4 +381,3 @@ struct Server {
 };
 void srvserve(Server *srv);
 void srvaccept(Server *s, int ev);
-void srvtick(Server *s, int ev);
