@@ -1,0 +1,16 @@
+Description: Use debian CFLAGS and LDFLAGS instead of upstream's
+Author: Gregory Potamianos <greg.potamianos@gmail.com>
+Last-Update: 2013-04-08
+--- a/Makefile
++++ b/Makefile
+@@ -1,9 +1,8 @@
+ PREFIX=/usr/local
+ BINDIR=$(PREFIX)/bin
+-CFLAGS=-Wall -Werror\
++CFLAGS?=-Wall -Werror\
+ 	-Wformat=2\
+ 
+-LDFLAGS=
+ OS=$(shell uname -s | tr A-Z a-z | sed 's?gnu/kfreebsd?freebsd?')
+ INSTALL=install
+ TAR=tar
