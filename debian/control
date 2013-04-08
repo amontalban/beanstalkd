@@ -1,7 +1,9 @@
 Source: beanstalkd
 Section: net
 Priority: extra
-Maintainer: Serafeim Zanikolas <sez@debian.org>
+Maintainer: Gregory Potamianos <greg.potamianos@gmail.com>
+Uploaders: Apollon Oikonomopoulos <apoikos@gmail.com>,
+ Serafeim Zanikolas <sez@debian.org>
 Build-Depends: debhelper (>= 7.0.50~), libtool, net-tools
 Standards-Version: 3.9.3
 Homepage: http://xph.us/software/beanstalkd/
