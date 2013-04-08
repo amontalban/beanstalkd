@@ -6,6 +6,14 @@ Files: *
 Copyright: Copyright © 2007-2012 The Beanstalkd Authors
 License: MIT
 
+Files: sd-daemon.*
+Copyright: Copyright © 2010 Lennart Poettering
+License: MIT
+
+Files: ct/*
+Copyright: Copyright © 2010, 2011 Keith Rarick
+License: MIT
+
 Files: debian/*
 Copyright: Copyright © 2009 Serafeim Zanikolas <sez@debian.org>
            Copyright © 2013 Apollon Oikonomopoulos <apoikos@gmail.com>
