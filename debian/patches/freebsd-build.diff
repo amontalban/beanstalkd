@@ -2,13 +2,14 @@
 # Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=664613
 # Author: Serafeim Zanikolas <sez@debian.org>
 # Last-Update: 2012-04-01
---- a/mk/inc
-+++ b/mk/inc
-@@ -2,6 +2,6 @@
- BINDIR=$(PREFIX)/bin
- CFLAGS=-Wall -Werror
+--- a/Makefile
++++ b/Makefile
+@@ -4,7 +4,7 @@
+ 	-Wformat=2\
+ 
  LDFLAGS=
--OS=$(shell uname -s | tr A-Z a-z)
+-OS=$(shell uname|tr A-Z a-z)
 +OS=$(shell uname -s | tr A-Z a-z | sed 's?gnu/kfreebsd?freebsd?')
  INSTALL=install
  TAR=tar
+ 
