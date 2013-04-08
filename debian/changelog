@@ -1,3 +1,18 @@
+beanstalkd (1.8-1) unstable; urgency=low
+
+  * New upstream (Closes: #701429, #704288)
+  * Refresh debian/patches/freebsd-build.diff to apply on Makefile
+  * Add debian/patch/sanitize_makefile.diff to play nice with
+    debian hardened flags
+  * Bump debhelper compat to 9
+  * Bump Standards version to 3.9.4
+  * Update debian/copyright to comply with copyright v1.0
+  * Friendly takeover (encouraged by old maintainer); setting
+    Gregory Potamianos as Maintainer and Apollon Oikonomopoulos,
+    Serafeim Zanikolas as Uploaders
+
+ -- Gregory Potamianos <greg.potamianos@gmail.com>  Mon, 08 Apr 2013 13:23:01 +0300
+
 beanstalkd (1.7-1) unstable; urgency=high
 
   * New upstream (Closes: #666775, #687402); high urgency due to RC bugs
