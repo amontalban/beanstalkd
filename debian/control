@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Gregory Potamianos <greg.potamianos@gmail.com>
 Uploaders: Apollon Oikonomopoulos <apoikos@gmail.com>,
  Serafeim Zanikolas <sez@debian.org>
-Build-Depends: debhelper (>= 7.0.50~), libtool, net-tools
+Build-Depends: debhelper (>= 9), libtool, net-tools
 Standards-Version: 3.9.4
 Homepage: http://xph.us/software/beanstalkd/
 Vcs-Git: git://git.debian.org/collab-maint/beanstalkd.git
