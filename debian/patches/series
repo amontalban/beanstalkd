@@ -1,2 +1,3 @@
 freebsd-build.diff
 sanitize_makefile.diff
+fix-hurd-ftbfs.patch

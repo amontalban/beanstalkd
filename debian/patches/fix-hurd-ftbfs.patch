@@ -1,0 +1,33 @@
+From: Gregory Potamianos <greg.potamianos@gmail.com>
+Subject: Fix FTBFS in hurd-i386
+
+* walg.c: Build fails on hurd-i386 due to PATH_MAX being
+  undefined. Patch to use dynamically allocated space
+  instead.
+
+Last-Update: 2013-04-10
+--- a/walg.c
++++ b/walg.c
+@@ -405,15 +405,18 @@
+     int r;
+     int fd;
+     struct flock lk;
+-    char path[PATH_MAX];
++    char *path;
++    size_t path_length;
+ 
+-    r = snprintf(path, PATH_MAX, "%s/lock", w->dir);
+-    if (r > PATH_MAX) {
+-        twarnx("path too long: %s/lock", w->dir);
++    path_length = strlen(w->dir) + strlen("/lock") + 1;
++    if ((path = malloc(path_length)) == NULL) {
++        twarn("malloc");
+         return 0;
+     }
++    r = snprintf(path, path_length, "%s/lock", w->dir);
+ 
+     fd = open(path, O_WRONLY|O_CREAT, 0600);
++    free(path);
+     if (fd == -1) {
+         twarn("open");
+         return 0;
