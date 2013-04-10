@@ -1,14 +1,19 @@
 From: Gregory Potamianos <greg.potamianos@gmail.com>
+Date: Wed, 10 Apr 2013 19:37:08 +0300
 Subject: Fix FTBFS in hurd-i386
 
 * walg.c: Build fails on hurd-i386 due to PATH_MAX being
   undefined. Patch to use dynamically allocated space
   instead.
+---
+ walg.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-Last-Update: 2013-04-10
+diff --git a/walg.c b/walg.c
+index 08c1f37..7481136 100644
 --- a/walg.c
 +++ b/walg.c
-@@ -405,15 +405,18 @@
+@@ -405,15 +405,18 @@ waldirlock(Wal *w)
      int r;
      int fd;
      struct flock lk;
