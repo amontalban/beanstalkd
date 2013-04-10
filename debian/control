@@ -6,7 +6,7 @@ Uploaders: Apollon Oikonomopoulos <apoikos@gmail.com>,
  Serafeim Zanikolas <sez@debian.org>
 Build-Depends: debhelper (>= 9), libtool, net-tools
 Standards-Version: 3.9.4
-Homepage: http://xph.us/software/beanstalkd/
+Homepage: http://kr.github.com/beanstalkd/
 Vcs-Git: git://git.debian.org/collab-maint/beanstalkd.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/beanstalkd.git
 
