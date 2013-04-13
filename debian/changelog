@@ -1,3 +1,12 @@
+beanstalkd (1.8-2) unstable; urgency=low
+
+  * Add debian/patches/fix-hurd-ftbfs.patch to fix FTBFS in hurd
+  * debian/control: Update homepage link
+  * debian/control: Canonicalize Vcs-* fields
+  * debian/patches/*: Make patches gbp-pq friendly
+
+ -- Gregory Potamianos <greg.potamianos@gmail.com>  Sat, 13 Apr 2013 19:07:18 +0300
+
 beanstalkd (1.8-1) unstable; urgency=low
 
   * New upstream (Closes: #701429, #704288)
