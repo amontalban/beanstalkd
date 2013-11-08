@@ -206,6 +206,10 @@ job before the job times out. When the job times out, the server will put the
 job back into the ready queue. Both the TTR and the actual time left can be
 found in response to the stats-job command.
 
+If more than one job is ready, beanstalkd will choose the one with the
+smallest priority value. Within each priority, it will choose the one that
+was received first.
+
 A timeout value of 0 will cause the server to immediately return either a
 response or TIMED_OUT.  A positive value of timeout will limit the amount of
 time the client will block on the reserve request until a job becomes
@@ -587,7 +591,7 @@ beanstalkd process starts; they are not stored on disk with the -b flag.
  - "cmd-list-tubes-watched" is the cumulative number of list-tubes-watched
    commands.
 
- - "cmd-pause-tube" is the cumulative number of pause-tube commands
+ - "cmd-pause-tube" is the cumulative number of pause-tube commands.
 
  - "job-timeouts" is the cumulative count of times a job has timed out.
 
@@ -623,19 +627,24 @@ beanstalkd process starts; they are not stored on disk with the -b flag.
  - "uptime" is the number of seconds since this server process started running.
 
  - "binlog-oldest-index" is the index of the oldest binlog file needed to
-   store the current jobs
+   store the current jobs.
 
  - "binlog-current-index" is the index of the current binlog file being
-   written to. If binlog is not active this value will be 0
+   written to. If binlog is not active this value will be 0.
 
  - "binlog-max-size" is the maximum size in bytes a binlog file is allowed
-   to get before a new binlog file is opened
+   to get before a new binlog file is opened.
 
  - "binlog-records-written" is the cumulative number of records written
-   to the binlog
+   to the binlog.
 
  - "binlog-records-migrated" is the cumulative number of records written
-   as part of compaction
+   as part of compaction.
+
+ - "id" is a random id string for this server process, generated when each
+   beanstalkd process starts.
+
+ - "hostname" the hostname of the machine as determined by uname.
 
 The list-tubes command returns a list of all existing tubes. Its form is:
 

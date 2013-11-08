@@ -8,6 +8,7 @@
 #include <sys/resource.h>
 #include <sys/uio.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <inttypes.h>
@@ -108,6 +109,7 @@ size_t job_data_size_limit = JOB_DATA_SIZE_LIMIT_DEFAULT;
 #define STATE_SENDWORD 3
 #define STATE_WAIT 4
 #define STATE_BITBUCKET 5
+#define STATE_CLOSE 6
 
 #define OP_UNKNOWN 0
 #define OP_PUT 1
@@ -183,6 +185,8 @@ size_t job_data_size_limit = JOB_DATA_SIZE_LIMIT_DEFAULT;
     "binlog-records-migrated: %" PRId64 "\n" \
     "binlog-records-written: %" PRId64 "\n" \
     "binlog-max-size: %d\n" \
+    "id: %s\n" \
+    "hostname: %s\n" \
     "\r\n"
 
 #define STATS_TUBE_FMT "---\n" \
@@ -231,6 +235,14 @@ static tube default_tube;
 
 static int drain_mode = 0;
 static int64 started_at;
+
+enum {
+  NumIdBytes = 8
+};
+
+static char id[NumIdBytes * 2 + 1]; // hex-encoded len of NumIdBytes
+
+static struct utsname node_info;
 static uint64 op_ct[TOTAL_OPS], timeout_ct = 0;
 
 static Conn *dirty;
@@ -289,7 +301,7 @@ reply(Conn *c, char *line, int len, int state)
 }
 
 
-void
+static void
 protrmdirty(Conn *c)
 {
     Conn *x, *newdirty = NULL;
@@ -372,6 +384,7 @@ reserve_job(Conn *c, job j)
     j->r.state = Reserved;
     job_insert(&c->reserved_jobs, j);
     j->reserver = c;
+    c->pending_timeout = -1;
     if (c->soonest_job && j->r.deadline_at < c->soonest_job->r.deadline_at) {
         c->soonest_job = j;
     }
@@ -695,7 +708,7 @@ check_err(Conn *c, const char *s)
     if (errno == EWOULDBLOCK) return;
 
     twarn("%s", s);
-    connclose(c);
+    c->state = STATE_CLOSE;
     return;
 }
 
@@ -917,7 +930,9 @@ fmt_stats(char *buf, size_t size, void *x)
             wcur,
             srv->wal.nmig,
             srv->wal.nrec,
-            srv->wal.filesize);
+            srv->wal.filesize,
+            id,
+            node_info.nodename);
 
 }
 
@@ -1555,7 +1570,7 @@ dispatch_cmd(Conn *c)
         reply_line(c, STATE_SENDWORD, "WATCHING %zu\r\n", c->watch.used);
         break;
     case OP_QUIT:
-        connclose(c);
+        c->state = STATE_CLOSE;
         break;
     case OP_PAUSE_TUBE:
         op_ct[type]++;
@@ -1671,7 +1686,10 @@ conn_data(Conn *c)
     case STATE_WANTCOMMAND:
         r = read(c->sock.fd, c->cmd + c->cmd_read, LINE_BUF_SIZE - c->cmd_read);
         if (r == -1) return check_err(c, "read()");
-        if (r == 0) return connclose(c); /* the client hung up */
+        if (r == 0) {
+            c->state = STATE_CLOSE;
+            return;
+        }
 
         c->cmd_read += r; /* we got some bytes */
 
@@ -1696,7 +1714,10 @@ conn_data(Conn *c)
         to_read = min(c->in_job_read, BUCKET_BUF_SIZE);
         r = read(c->sock.fd, bucket, to_read);
         if (r == -1) return check_err(c, "read()");
-        if (r == 0) return connclose(c); /* the client hung up */
+        if (r == 0) {
+            c->state = STATE_CLOSE;
+            return;
+        }
 
         c->in_job_read -= r; /* we got some bytes */
 
@@ -1711,7 +1732,10 @@ conn_data(Conn *c)
 
         r = read(c->sock.fd, j->body + c->in_job_read, j->r.body_size -c->in_job_read);
         if (r == -1) return check_err(c, "read()");
-        if (r == 0) return connclose(c); /* the client hung up */
+        if (r == 0) {
+            c->state = STATE_CLOSE;
+            return;
+        }
 
         c->in_job_read += r; /* we got some bytes */
 
@@ -1722,7 +1746,10 @@ conn_data(Conn *c)
     case STATE_SENDWORD:
         r= write(c->sock.fd, c->reply + c->reply_sent, c->reply_len - c->reply_sent);
         if (r == -1) return check_err(c, "write()");
-        if (r == 0) return connclose(c); /* the client hung up */
+        if (r == 0) {
+            c->state = STATE_CLOSE;
+            return;
+        }
 
         c->reply_sent += r; /* we got some bytes */
 
@@ -1742,7 +1769,10 @@ conn_data(Conn *c)
 
         r = writev(c->sock.fd, iov, 2);
         if (r == -1) return check_err(c, "writev()");
-        if (r == 0) return connclose(c); /* the client hung up */
+        if (r == 0) {
+            c->state = STATE_CLOSE;
+            return;
+        }
 
         /* update the sent values */
         c->reply_sent += r;
@@ -1810,6 +1840,10 @@ h_conn(const int fd, const short which, Conn *c)
 
     conn_data(c);
     while (cmd_data_ready(c) && (c->cmd_len = cmd_len(c))) do_cmd(c);
+    if (c->state == STATE_CLOSE) {
+        protrmdirty(c);
+        connclose(c);
+    }
     update_conns();
 }
 
@@ -1819,7 +1853,7 @@ prothandle(Conn *c, int ev)
     h_conn(c->sock.fd, ev, c);
 }
 
-void
+int64
 prottick(Server *s)
 {
     int r;
@@ -1827,10 +1861,16 @@ prottick(Server *s)
     int64 now;
     int i;
     tube t;
+    int64 period = 0x34630B8A000LL; /* 1 hour in nanoseconds */
+    int64 d;
 
     now = nanoseconds();
     while ((j = delay_q_peek())) {
-        if (j->r.deadline_at > now) break;
+        d = j->r.deadline_at - now;
+        if (d > 0) {
+            period = min(period, d);
+            break;
+        }
         j = delay_q_take();
         r = enqueue_job(s, j, 0, 0);
         if (r < 1) bury_job(s, j, 0); /* out of memory, so bury it */
@@ -1838,16 +1878,21 @@ prottick(Server *s)
 
     for (i = 0; i < tubes.used; i++) {
         t = tubes.items[i];
-
-        if (t->pause && t->deadline_at <= now) {
+        d = t->deadline_at - now;
+        if (t->pause && d <= 0) {
             t->pause = 0;
             process_queue();
+        }
+        else if (d > 0) {
+            period = min(period, d);
         }
     }
 
     while (s->conns.len) {
         Conn *c = s->conns.data[0];
-        if (c->tickat > now) {
+        d = c->tickat - now;
+        if (d > 0) {
+            period = min(period, d);
             break;
         }
 
@@ -1856,6 +1901,8 @@ prottick(Server *s)
     }
 
     update_conns();
+
+    return period;
 }
 
 void
@@ -1932,6 +1979,29 @@ prot_init()
 {
     started_at = nanoseconds();
     memset(op_ct, 0, sizeof(op_ct));
+
+    int dev_random = open("/dev/urandom", O_RDONLY);
+    if (dev_random < 0) {
+        twarn("open /dev/urandom");
+        exit(50);
+    }
+
+    int i, r;
+    byte rand_data[NumIdBytes];
+    r = read(dev_random, &rand_data, NumIdBytes);
+    if (r != NumIdBytes) {
+        twarn("read /dev/urandom");
+        exit(50);
+    }
+    for (i = 0; i < NumIdBytes; i++) {
+        sprintf(id + (i * 2), "%02x", rand_data[i]);
+    }
+    close(dev_random);
+
+    if (uname(&node_info) == -1) {
+        warn("uname");
+        exit(50);
+    }
 
     ms_init(&tubes, NULL, NULL);
 
