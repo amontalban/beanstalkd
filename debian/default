@@ -9,7 +9,3 @@ BEANSTALKD_LISTEN_PORT=11300
 # persistent job storage.
 #BEANSTALKD_EXTRA="-b /var/lib/beanstalkd"
 
-DAEMON_OPTS="-l $BEANSTALKD_LISTEN_ADDR -p $BEANSTALKD_LISTEN_PORT $BEANSTALKD_EXTRA"
-
-## Uncomment to enable startup during boot.
-#START=yes
