@@ -1,3 +1,7 @@
+// Requirements:
+// #include <stdint.h>
+// #include <stdlib.h>
+
 typedef unsigned char uchar;
 typedef uchar         byte;
 typedef unsigned int  uint;
@@ -243,8 +247,7 @@ extern size_t primes[];
 extern size_t job_data_size_limit;
 
 void prot_init(void);
-void prottick(Server *s);
-void protrmdirty(Conn*);
+int64 prottick(Server *s);
 
 Conn *remove_waiting_conn(Conn *c);
 

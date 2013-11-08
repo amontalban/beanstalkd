@@ -4,7 +4,7 @@
 %define beanstalkd_logdir    %{_localstatedir}/log/beanstalkd
 
 Name:           beanstalkd
-Version:        1.8
+Version:        1.9
 Release:        0%{?dist}
 Summary:        A simple, fast workqueue service
 
