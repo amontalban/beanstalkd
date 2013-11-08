@@ -7,7 +7,7 @@
 export VERBOSE=1
 
 %:
-	dh $@
+	dh $@ --with systemd
 
 override_dh_prep:
 	dh_prep -X beanstalkd.spec
