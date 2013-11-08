@@ -7,18 +7,17 @@ Use debian CFLAGS and LDFLAGS instead of upstream's
  Makefile |    3 +--
  1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index b2c16a2..cea8fbe 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1,9 +1,8 @@
+@@ -1,10 +1,9 @@
  PREFIX=/usr/local
  BINDIR=$(PREFIX)/bin
 -CFLAGS=-Wall -Werror\
 +CFLAGS?=-Wall -Werror\
  	-Wformat=2\
+ 	-g\
  
 -LDFLAGS=
  OS=$(shell uname -s | tr A-Z a-z | sed 's?gnu/kfreebsd?freebsd?')
  INSTALL=install
- TAR=tar
+ 
