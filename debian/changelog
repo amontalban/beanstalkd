@@ -1,3 +1,21 @@
+beanstalkd (1.9-1) unstable; urgency=low
+
+  [ Gregory Potamianos ]
+  * Imported Upstream version 1.9
+  * debian/watch: beanstalkd now uses github archive
+  * debian/patches: drop 0003-Fix-FTBFS-in-hurd-i386.patch, merged upstream
+  * debian/patches: refresh 0001-Fix-FTBFS-for-gnu-kfreebsd.patch
+  * debian/patches: refresh 0002-Sanitize-Makefile.patch
+  * debian/docs: removed NEWS.md, removed upstream
+  * debian/default: remove obsolete variables
+  * debian/control: Bump Standards-Version to 3.9.5 (no changes)
+
+  [ Apollon Oikonomopoulos ]
+  * Init script/defaults refactoring
+  * Initial systemd support
+
+ -- Gregory Potamianos <greg.potamianos@gmail.com>  Tue, 12 Nov 2013 15:26:11 +0200
+
 beanstalkd (1.8-2) unstable; urgency=low
 
   * Add debian/patches/fix-hurd-ftbfs.patch to fix FTBFS in hurd
