@@ -1,0 +1,79 @@
+From: Gregory Potamianos <greg.potamianos@gmail.com>
+Date: Fri, 15 Nov 2013 16:29:08 +0200
+Subject: Enable linking with debian libsystemd-daemon
+
+Compile and link with libsystemd-daemon on linux. Beanstalkd
+ships with sd-daemon in the upstream distribution. We use that
+only on arches where libsystemd-daemon is not available.
+--- a/net.c
++++ b/net.c
+@@ -8,7 +8,12 @@
+ #include <netinet/in.h>
+ #include <netinet/tcp.h>
+ #include "dat.h"
++
++#ifdef USE_EXTERNAL_SD_DAEMON
++#include <systemd/sd-daemon.h>
++#else
+ #include "sd-daemon.h"
++#endif
+ 
+ int
+ make_server_socket(char *host, char *port)
+--- a/util.c
++++ b/util.c
+@@ -4,7 +4,13 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <stdarg.h>
++
++#ifdef USE_EXTERNAL_SD_DAEMON
++#include <systemd/sd-daemon.h>
++#else
+ #include "sd-daemon.h"
++#endif
++
+ #include "dat.h"
+ 
+ const char *progname;
+--- a/Makefile
++++ b/Makefile
+@@ -7,6 +7,7 @@
+ OS=$(shell uname -s | tr A-Z a-z | sed 's?gnu/kfreebsd?freebsd?')
+ INSTALL=install
+ 
++DEB_HOST_ARCH_OS:=$(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
+ VERS=$(shell ./vers.sh)
+ TARG=beanstalkd
+ MOFILE=main.o
+@@ -20,7 +21,6 @@
+ 	net.o\
+ 	primes.o\
+ 	prot.o\
+-	sd-daemon.o\
+ 	serv.o\
+ 	time.o\
+ 	tube.o\
+@@ -28,6 +28,10 @@
+ 	vers.o\
+ 	walg.o\
+ 
++ifneq ($(DEB_HOST_ARCH_OS),linux)
++OFILES += sd-daemon.o
++endif
++
+ TOFILES=\
+ 	heap-test.o\
+ 	integ-test.o\
+@@ -36,7 +40,10 @@
+ 
+ HFILES=\
+ 	dat.h\
+-	sd-daemon.h\
++
++ifneq ($(DEB_HOST_ARCH_OS),linux)
++HFILES += sd-daemon.h
++endif
+ 
+ CLEANFILES=\
+ 	vers.c\
