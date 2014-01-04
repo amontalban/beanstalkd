@@ -1,3 +1,4 @@
 0001-Fix-FTBFS-for-gnu-kfreebsd.patch
 0002-Sanitize-Makefile.patch
 0003-Use-external-sd-daemon-on-linux.patch
+0004-fix-segfault-on-interrupted-epoll_wait.patch
