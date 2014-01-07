@@ -37,3 +37,6 @@ override_dh_systemd_enable:
 
 	# Do not enable the socket on install, but disable it on purge
 	dh_systemd_enable --no-enable beanstalkd.socket
+
+.PHONY: override_dh_prep override_dh_auto_install override_dh_auto_clean \
+	override_dh_systemd_enable
