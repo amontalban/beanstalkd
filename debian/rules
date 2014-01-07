@@ -30,3 +30,10 @@ override_dh_auto_clean:
 	mv beanstalkd.spec beanstalkd.spec_
 	dh_auto_clean
 	mv beanstalkd.spec_ beanstalkd.spec
+
+override_dh_systemd_enable:
+	# Enable the service
+	dh_systemd_enable beanstalkd.service
+
+	# Do not enable the socket on install, but disable it on purge
+	dh_systemd_enable --no-enable beanstalkd.socket
