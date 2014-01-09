@@ -1,3 +1,19 @@
+beanstalkd (1.9-2) unstable; urgency=medium
+
+  [ Gregory Potamianos ]
+  * Use debian libsystemd-daemon where available
+
+  [ Apollon Oikonomopoulos ]
+  * Add patch fixing segfault on interrupted epoll_wait. Thanks to Danny
+    Guinther for the patch! (LP: #1263808)
+  * Add Documentation field to the systemd unit file
+  * Add systemd socket activation support
+  * Restart beanstalkd after upgrade (and not during). This ensures that
+    socket activation under systemd will work predictably during upgrades and
+    also minimizes service downtime.
+
+ -- Gregory Potamianos <greg.potamianos@gmail.com>  Thu, 09 Jan 2014 20:20:18 +0200
+
 beanstalkd (1.9-1) unstable; urgency=low
 
   [ Gregory Potamianos ]

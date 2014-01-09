@@ -1,4 +1,4 @@
-beanstalkd (1.9-2) unstable; urgency=low
+beanstalkd (1.9-2) unstable; urgency=medium
 
   As of 1.9-2, beanstalkd ships a systemd socket unit file to facilitate
   socket activation via systemd. The socket activation is disabled by default,
