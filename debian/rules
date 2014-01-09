@@ -38,5 +38,10 @@ override_dh_systemd_enable:
 	# Do not enable the socket on install, but disable it on purge
 	dh_systemd_enable --no-enable beanstalkd.socket
 
+override_dh_installinit:
+	# This makes sure systemd's socket activation will not start the
+	# service during the upgrade and also minimizes service downtime.
+	dh_installinit --restart-after-upgrade
+
 .PHONY: override_dh_prep override_dh_auto_install override_dh_auto_clean \
-	override_dh_systemd_enable
+	override_dh_systemd_enable override_dh_installinit
