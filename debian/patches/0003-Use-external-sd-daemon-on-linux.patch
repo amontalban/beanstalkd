@@ -5,18 +5,23 @@ Subject: Enable linking with debian libsystemd-daemon
 Compile and link with libsystemd-daemon on linux. Beanstalkd
 ships with sd-daemon in the upstream distribution. We use that
 only on arches where libsystemd-daemon is not available.
+
+Last-Update: 2014-09-18
 --- a/net.c
 +++ b/net.c
-@@ -8,7 +8,12 @@
+@@ -7,8 +7,14 @@
+ #include <sys/socket.h>
  #include <netinet/in.h>
  #include <netinet/tcp.h>
- #include "dat.h"
+-#include "dat.h"
 +
 +#ifdef USE_EXTERNAL_SD_DAEMON
 +#include <systemd/sd-daemon.h>
 +#else
  #include "sd-daemon.h"
 +#endif
++
++#include "dat.h"
  
  int
  make_server_socket(char *host, char *port)
