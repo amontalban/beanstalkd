@@ -1,5 +1,6 @@
+DESTDIR=
 PREFIX=/usr/local
-BINDIR=$(PREFIX)/bin
+BINDIR=$(DESTDIR)$(PREFIX)/bin
 CFLAGS=-Wall -Werror\
 	-Wformat=2\
 	-g\
@@ -30,10 +31,10 @@ OFILES=\
 	walg.o\
 
 TOFILES=\
-	heap-test.o\
-	integ-test.o\
-	job-test.o\
-	util-test.o\
+	testheap.o\
+	testjobs.o\
+	testserv.o\
+	testutil.o\
 
 HFILES=\
 	dat.h\
@@ -68,6 +69,10 @@ clean:
 .PHONY: check
 check: ct/_ctcheck
 	ct/_ctcheck
+
+.PHONY: bench
+bench: ct/_ctcheck
+	ct/_ctcheck -b
 
 ct/_ctcheck: ct/_ctcheck.o ct/ct.o $(OFILES) $(TOFILES)
 
