@@ -1,3 +1,24 @@
+beanstalkd (1.10-1) unstable; urgency=medium
+
+  [ Apollon Oikonomopoulos ]
+  * New upstream release
+    + Drop 0004-fix-segfault-on-interrupted-epoll_wait.patch, fixed upstream.
+    + Refresh 0002-Sanitize-Makefile.patch and
+      0003-Use-external-sd-daemon-on-linux.patch to match upstream changes.
+  * 0003-Use-external-sd-daemon-on-linux.patch: include
+    systemd/systemd-daemon.h before dat.h; fixes FTBFS with newer systemd
+    header versions.
+  * Add a patch to fix a couple of bugs in upstream's test suite.
+  * B-D on systemd-dev instead of systemd-daemon-dev and link with -lsystemd.
+  * d/watch: use sane filenames for upstream tarballs.
+  * Remove Serafeim Zanikolas from Uploaders. Thanks for your hard work!
+
+  [ Gregory Potamianos ]
+  * Fix typo in beanstalkd.service file, causing it to ignore BEANSTALKD_EXTRA
+    from /etc/default/beanstalkd.
+
+ -- Apollon Oikonomopoulos <apoikos@debian.org>  Thu, 18 Sep 2014 09:03:49 +0300
+
 beanstalkd (1.9-2) unstable; urgency=medium
 
   [ Gregory Potamianos ]
