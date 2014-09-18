@@ -38,7 +38,7 @@ only on arches where libsystemd-daemon is not available.
  const char *progname;
 --- a/Makefile
 +++ b/Makefile
-@@ -7,6 +7,7 @@
+@@ -8,6 +8,7 @@
  OS=$(shell uname -s | tr A-Z a-z | sed 's?gnu/kfreebsd?freebsd?')
  INSTALL=install
  
@@ -46,7 +46,7 @@ only on arches where libsystemd-daemon is not available.
  VERS=$(shell ./vers.sh)
  TARG=beanstalkd
  MOFILE=main.o
-@@ -20,7 +21,6 @@
+@@ -21,7 +22,6 @@
  	net.o\
  	primes.o\
  	prot.o\
@@ -54,7 +54,7 @@ only on arches where libsystemd-daemon is not available.
  	serv.o\
  	time.o\
  	tube.o\
-@@ -28,6 +28,10 @@
+@@ -29,6 +29,10 @@
  	vers.o\
  	walg.o\
  
@@ -63,9 +63,9 @@ only on arches where libsystemd-daemon is not available.
 +endif
 +
  TOFILES=\
- 	heap-test.o\
- 	integ-test.o\
-@@ -36,7 +40,10 @@
+ 	testheap.o\
+ 	testjobs.o\
+@@ -37,7 +41,10 @@
  
  HFILES=\
  	dat.h\
