@@ -7,15 +7,9 @@
 export VERBOSE=1
 
 DEB_HOST_ARCH_OS := $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
-# no libsystemd-daemon on non-linux arches
-ifeq ($(DEB_HOST_ARCH_OS), linux)
-	export DEB_LDFLAGS_MAINT_APPEND = -lsystemd
-	export DEB_CFLAGS_MAINT_APPEND = -DUSE_EXTERNAL_SD_DAEMON=1
-endif
-
 
 %:
-	dh $@ --with systemd
+	dh $@
 
 override_dh_prep:
 	dh_prep -X beanstalkd.spec
