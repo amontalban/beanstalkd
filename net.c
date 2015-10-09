@@ -8,7 +8,6 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include "dat.h"
-#include "sd-daemon.h"
 
 int
 make_server_socket(char *host, char *port)

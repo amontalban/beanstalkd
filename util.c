@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#include "sd-daemon.h"
 #include "dat.h"
 
 const char *progname;
